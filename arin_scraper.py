@@ -133,11 +133,11 @@ def list_AS_numbers(filelines):
 
 def nmapScanHosts(targetList,opts):
     '''Takes an input of a list of targets(see nmap help), and raw command line options for nmap, and
-    scans all targets in targetList, and returns a list of valid hosts. the options of -T4 -sn -R --max-retries 5'''
+    scans all targets in targetList, and returns a list of valid hosts. the options of -T5 -sn --max-retries 5'''
     import nmap
     opts = str(opts)
     scanner = nmap.PortScanner()
-    nmapCMDline='-T5 -sn -R --max-retries 5'
+    nmapCMDline='-T5 -sn --max-retries 5'
     nmapCMDline += opts
     validHosts = []
     scanner.scan(hosts=' '.join(targetList), ports=None, arguments=nmapCMDline)
