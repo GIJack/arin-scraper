@@ -131,34 +131,24 @@ def list_AS_numbers(filelines):
                 outList.append(line[3])
     return outList
 
-def nmapScan(target,opts):
-    '''Takes an input of a target(see nmap help), and raw command line options for nmap, and
+def nmapScanHosts(targetList,opts):
+    '''Takes an input of a list of targets(see nmap help), and raw command line options for nmap, and
     scans all targets in targetList, and returns a list of valid hosts. the options of -T4 -sn -R --max-retries 5'''
+    import nmap
     opts = str(opts)
     scanner = nmap.PortScanner()
-    nmapCMDline='-T4 -sn -R --max-retries 5'
+    nmapCMDline='-T5 -sn -R --max-retries 5'
     nmapCMDline += opts
     validHosts = []
-    scanner.scan(hosts=target, ports=None, arguments=nmapCMDline)
+    scanner.scan(hosts=' '.join(targetList), ports=None, arguments=nmapCMDline)
     for host in scanner.all_hosts():
         if scanner[host].state() == 'up':
             validHosts.append(host)
-    os._exit(0)
     return validHosts
-def spawnNmapForks(targetList,opts):
-    '''Takes a list of targets and runs nmapScan on them forking off a new proccess for every target'''
-    import nmap
-    import os
-    validHosts = []
-    pids = []
-    for target in targetList:
-        pids.append(os.fork())
-        validHosts = nmapScan(target,opts)
-    return validHosts
+
 #----Below here this is run in order, check to see if each test is called for, and run if applicable ----#
 
-import sys
-import os.path
+import sys, os.path
 #Now with more awesomesauce, we can now check as many files are entered on the command line, now except * and ? expansions for max win, and much grepping. proc_arininfo.py -a *|grep whatever now works
 for filename in args.filenames:
 #open target file and dump lines into a list
