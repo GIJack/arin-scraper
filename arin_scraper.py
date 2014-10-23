@@ -42,15 +42,14 @@ parser = argparse.ArgumentParser(description='''This app parses data about ASNs 
 ftp://ftp.arin.net/pub/stats/''')
 parser.add_argument("filenames",nargs='+',help="files to proccess")
 
-filter_type = parser.add_argument_group("Data Types:")
+filter_type = parser.add_argument_group("Filtering Options","show data that matches these parameters")
 filter_type.add_argument("-a","--all",help="Display All Information(equiv of -i46n)",action="store_true")
 filter_type.add_argument("-i","--info",help="Display Metadata From the First Line of the File",action="store_true")
 filter_type.add_argument("-4","--ipv4",help="Display IPv4 IP Blocks",action="store_true")
 filter_type.add_argument("-6","--ipv6",help="Display IPv6 IP Blocks",action="store_true")
 filter_type.add_argument("-n","--asn",help="Display Autonomous System Numbers(ASN)",action="store_true")
-date_filter = filter_type.add_mutually_exclusive_group()
-date_filter.add_argument("-b","--before-date",help="List entries before specified date. Use 8 digit YEARMONTHDAY format",type=int)
-date_filter.add_argument("-f","--after-date",help="List entries after specified date. Use 8 digit YEARMONTHDAY format",type=int)
+filter_type.add_argument("-b","--before-date",help="List entries before specified date. Use 8 digit YEARMONTHDAY format",type=int)
+filter_type.add_argument("-f","--after-date",help="List entries after specified date. Use 8 digit YEARMONTHDAY format",type=int)
 nmap_opts = parser.add_argument_group("NMAP Options","discover hosts on matching IP address blocks using nmap IP scanner")
 nmap_opts.add_argument("-N","--nmap",help="Scan Matching IP Address Ranges with NMAP",action="store_true")
 nmap_opts.add_argument("-O","--nmap-opts",help="Command line options to use with NMAP",type=str,default='-T5 -sn --max-retries 5')
@@ -109,8 +108,6 @@ def print_metadata():
 def list_ip_blocks(filelines,ver):
     '''print all ip address blocks, two variables, first a list with all the lines of the current file
     second, the version of the IP protocol, either IPv4 or IPv6 '''
-    print(colors.bold,colors.fg.yellow,"	",ver,"Address blocks",colors.reset)
-    print(colors.bold,"Country Code	IPBlock	 	CIDR Block",colors.reset)
     outList= []
     for cc in countries:
         for line in filelines:
@@ -118,16 +115,26 @@ def list_ip_blocks(filelines,ver):
             line = line.split(d)
             if len(line) < 7:
                 continue
-            elif ver == "IPv4":
-                if line[1] == cc and line[6].strip() == "assigned" and line[2] == ver.lower():
-                    print(line[1]+"		"+line[3]+"	"+cidr_convert(line[4]))
+            if ver == "ipv4":
+                if line[1] == cc and line[6].strip() == "assigned" and line[2] == ver:
                     line[4] = cidr_convert(line[4])
-                    outList.append(line[3]+cidr_convert(line[4]))
-            elif ver == "IPv6":
-                if line[1] == cc and line[6].strip() == "assigned" and line[2] == ver.lower():
-                    print(line[1]+"		"+line[3]+"		/"+line[4])
-                    outList.append(line[3]+line[4])
+                    outList.append(line)
+            elif ver == "ipv6":
+                if line[1] == cc and line[6].strip() == "assigned" and line[2] == ver:
+                    line[4] = "/"+line[4]
+                    outList.append(line)
     return outList
+
+def print_ip_block_list(ipBlockList,ver):
+    print(colors.bold,colors.fg.yellow,"	",ver,"Address blocks",colors.reset)
+    print(colors.bold,"Country Code	IPBlock	 	CIDR Block",colors.reset)
+    for line in ipBlockList:
+        print(line[1]+"		"+line[3]+"	"+line[4])
+
+def print_ip_list(ipList):
+        print(colors.bold,colors.fg.yellow,"	IP Addresses",colors.reset)
+        for ip in ipList:
+            print(ip)
 
 def list_AS_numbers(filelines):
     '''Print all the Autonomous Systems listed in the file, takes one variable, a list with the filelines in it'''
@@ -141,24 +148,27 @@ def list_AS_numbers(filelines):
                 continue
             elif line[1] == cc and line[2] == "asn":
                 print(line[1]+"		"+line[3])
-                outList.append(line[3])
+                outList.append(line)
     return outList
 
 def nmapScanHosts(targetList,opts):
     '''Takes an input of a list of targets(see nmap help), and raw command line options for nmap, and
     scans all targets in targetList, and returns a list of valid hosts. the options of -T5 -sn --max-retries 5'''
+    scanTargets = []
+    for line in targetList:
+           scanTargets.append(line[3]+line[4])
     import nmap
     opts = str(opts)
     scanner = nmap.PortScanner()
     validHosts = []
-    scanner.scan(hosts=' '.join(targetList), ports=None, arguments=opts)
+    scanner.scan(hosts=' '.join(scanTargets), ports=None, arguments=opts)
     for host in scanner.all_hosts():
         if scanner[host].state() == 'up':
             validHosts.append(host)
     return validHosts
 
 def FilterDates(dateIn,operator,fileLines):
-    '''three operators, an 8 digit number in the YEARMONTHDAY formart, a string with either "before", or "after", and the file list. Returned is the file list with only relivant dates'''
+    '''three operators, an 8 digit number in the YEARMONTHDAY formart, a string with either "before", or "after", and the filelines list. Returned is the file list with only relivant dates'''
     filteredLines = []
     for line in fileLines:
         line.strip("\n")
@@ -199,7 +209,7 @@ for filename in args.filenames:
     #Now filter dates as set in args
     if args.before_date != None:
         filelines = FilterDates(args.before_date,"before",filelines)
-    elif args.after_date != None:
+    if args.after_date != None:
         filelines = FilterDates(args.after_date,"after",filelines)
     #now check to see if we have valid data
     meta_list = filelines[0].split(d)
@@ -214,15 +224,24 @@ for filename in args.filenames:
         startdate = meta_list[4];enddate = meta_list[5]
         offset = meta_list[6]
         filename = filename
-
+    ipList = []
     if args.info == True or args.all == True:
         print_metadata()
     if args.ipv4 == True or args.all == True:
-        iplist = list_ip_blocks(filelines,"IPv4")
+        ipBlockList = list_ip_blocks(filelines,"ipv4")
         if args.nmap == True:
-            #print(nmapScanHosts(iplist,args.nmap_opts))
+           ipList += nmapScanHosts(ipBlockList,args.nmap_opts)
+        else:
+            print_ip_block_list(ipBlockList,"IPv4")
     if args.ipv6 == True or args.all == True:
-        list_ip_blocks(filelines,"IPv6")
+        ipBlockList = list_ip_blocks(filelines,"ipv6")
+        if args.nmap == True:
+           ipList += nmapScanHosts(ipBlockList,args.nmap_opts)
+        else:
+            print_ip_block_list(ipBlockList,"IPv6")
+    if args.nmap == True:
+        print_ip_list(ipList)
+
     if args.asn == True or args.all == True:
         list_AS_numbers(filelines)
 
