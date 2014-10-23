@@ -37,17 +37,27 @@ class colors:
 
 #argument parsing code.
 import argparse
-parser = argparse.ArgumentParser(description='''This app parses data about ASNs and IP address ranges from ARIN Statistics Files. ARIN's Status files can be found on their FTP server here:
+
+parser = argparse.ArgumentParser(description='''This app parses data about ASNs and IP address ranges from ARIN Statistics Files, and look for hosts based on system name ARIN's Status files can be found on their FTP server here:
 ftp://ftp.arin.net/pub/stats/''')
 parser.add_argument("filenames",nargs='+',help="files to proccess")
-parser.add_argument("-a","--all",help="Display All Information(equiv of -i46n)",action="store_true")
-parser.add_argument("-i","--info",help="Display Metadata From the First Line of the File",action="store_true")
-parser.add_argument("-4","--ipv4",help="Display IPv4 IP Blocks",action="store_true")
-parser.add_argument("-6","--ipv6",help="Display IPv6 IP Blocks",action="store_true")
-parser.add_argument("-n","--asn",help="Display Autonomous System Numbers(ASN)",action="store_true")
-use_dict = parser.add_mutually_exclusive_group()
+
+filter_type = parser.add_argument_group("Data Types:")
+filter_type.add_argument("-a","--all",help="Display All Information(equiv of -i46n)",action="store_true")
+filter_type.add_argument("-i","--info",help="Display Metadata From the First Line of the File",action="store_true")
+filter_type.add_argument("-4","--ipv4",help="Display IPv4 IP Blocks",action="store_true")
+filter_type.add_argument("-6","--ipv6",help="Display IPv6 IP Blocks",action="store_true")
+filter_type.add_argument("-n","--asn",help="Display Autonomous System Numbers(ASN)",action="store_true")
+date_filter = filter_type.add_mutually_exclusive_group()
+date_filter.add_argument("-b","--before-date",help="List entries before specified date. Use 8 digit YEARMONTHDAY format",type=int)
+date_filter.add_argument("-f","--after-date",help="List entries after specified date. Use 8 digit YEARMONTHDAY format",type=int)
+nmap_opts = parser.add_argument_group("NMAP Options","discover hosts on matching IP address blocks using nmap IP scanner")
+nmap_opts.add_argument("-N","--nmap",help="Scan Matching IP Address Ranges with NMAP",action="store_true")
+nmap_opts.add_argument("-O","--nmap-opts",help="Command line options to use with NMAP",type=str,default='-T5 -sn --max-retries 5')
+dict_group = parser.add_argument_group("Dictionary Options:","Specify list of country codes to use")
+use_dict = dict_group.add_mutually_exclusive_group()
 use_dict.add_argument("-C","--cc",help="Country Codes: Use specified country codes instead of built in lists(space seperated ISO 3166-1 valid entries)",type=str)
-use_dict.add_argument("-M","--marks-list",help="Use Mark's List of Countries"+colors.fg.lightcyan+"(default)" + colors.reset,action="store_true")
+use_dict.add_argument("-M","--marks-list",help="Use Mark's List of Countries"+colors.fg.lightcyan+ colors.bold+"(default)"+colors.reset,action="store_true")
 use_dict.add_argument("-S","--iso-list",help="Use List of Countries From ISO 3166-1(all of them)",action="store_true")
 args = parser.parse_args()
 
@@ -76,6 +86,8 @@ def cidr_convert(total):
 
 def date_convert(indate):
     '''When given a single 8 digit number for YEARMONTHDAY, converts into a standard date'''
+    if indate == "":
+       return "Unknown		"
     import datetime
     indate  = str(indate)
     year    = int(indate[:4])
@@ -86,8 +98,8 @@ def date_convert(indate):
     else:
         return datetime.date(year,month,day).strftime("%A %d. %B %Y")
 
-def print_metadata(file_meta):
-    '''Prints ARIN status file data in human readable format. takes one option, a class with the file metadata '''
+def print_metadata():
+    '''Prints ARIN status file data in human readable format. '''
     print(colors.fg.lightgreen,colors.bold,"File Name: ",colors.reset,os.path.abspath(file_meta.filename))
     print(colors.fg.yellow,colors.bold,"File Format Version:",colors.reset,file_meta.version,colors.bold,colors.fg.yellow,"			Serial Number:",colors.reset,file_meta.serial)
     print(colors.fg.yellow,colors.bold,"Total Entries:",colors.reset,file_meta.total,colors.bold,colors.fg.yellow,"			Delegate:",colors.reset,file_meta.name.upper())
@@ -109,6 +121,7 @@ def list_ip_blocks(filelines,ver):
             elif ver == "IPv4":
                 if line[1] == cc and line[6].strip() == "assigned" and line[2] == ver.lower():
                     print(line[1]+"		"+line[3]+"	"+cidr_convert(line[4]))
+                    line[4] = cidr_convert(line[4])
                     outList.append(line[3]+cidr_convert(line[4]))
             elif ver == "IPv6":
                 if line[1] == cc and line[6].strip() == "assigned" and line[2] == ver.lower():
@@ -137,15 +150,30 @@ def nmapScanHosts(targetList,opts):
     import nmap
     opts = str(opts)
     scanner = nmap.PortScanner()
-    nmapCMDline='-T5 -sn --max-retries 5'
-    nmapCMDline += opts
     validHosts = []
-    scanner.scan(hosts=' '.join(targetList), ports=None, arguments=nmapCMDline)
+    scanner.scan(hosts=' '.join(targetList), ports=None, arguments=opts)
     for host in scanner.all_hosts():
         if scanner[host].state() == 'up':
             validHosts.append(host)
     return validHosts
 
+def FilterDates(dateIn,operator,fileLines):
+    '''three operators, an 8 digit number in the YEARMONTHDAY formart, a string with either "before", or "after", and the file list. Returned is the file list with only relivant dates'''
+    filteredLines = []
+    for line in fileLines:
+        line.strip("\n")
+        line = line.split(d)
+        if len(line) < 7:
+            continue
+        if line[5] == "00000000" or line[5] == "":
+            continue
+        elif operator == "before":
+            if int(line[5]) < dateIn:
+                filteredLines.append("|".join(line))
+        elif operator == "after":
+            if int(line[5]) > dateIn:
+                filteredLines.append("|".join(line))
+    return filteredLines
 #----Below here this is run in order, check to see if each test is called for, and run if applicable ----#
 
 import sys, os.path
@@ -168,6 +196,11 @@ for filename in args.filenames:
             filelines2.append(line)
     filelines = filelines2
     del(filelines2)
+    #Now filter dates as set in args
+    if args.before_date != None:
+        filelines = FilterDates(args.before_date,"before",filelines)
+    elif args.after_date != None:
+        filelines = FilterDates(args.after_date,"after",filelines)
     #now check to see if we have valid data
     meta_list = filelines[0].split(d)
     if len(meta_list) != 7:
@@ -183,9 +216,11 @@ for filename in args.filenames:
         filename = filename
 
     if args.info == True or args.all == True:
-        print_metadata(file_meta)
+        print_metadata()
     if args.ipv4 == True or args.all == True:
-        list_ip_blocks(filelines,"IPv4")
+        iplist = list_ip_blocks(filelines,"IPv4")
+        if args.nmap == True:
+            #print(nmapScanHosts(iplist,args.nmap_opts))
     if args.ipv6 == True or args.all == True:
         list_ip_blocks(filelines,"IPv6")
     if args.asn == True or args.all == True:
