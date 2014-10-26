@@ -60,19 +60,6 @@ use_dict.add_argument("-M","--marks-list",help="Use Mark's List of Countries"+co
 use_dict.add_argument("-S","--iso-list",help="Use List of Countries From ISO 3166-1(all of them)",action="store_true")
 args = parser.parse_args()
 
-#the default
-countries = marksCountries
-
-if args.cc != None:
-    args.marks_list=False
-    args.cc = args.cc.upper()
-    countries = args.cc.split()
-elif args.iso_list == True:
-    countries = allCountries
-    args.marks_list=False
-elif args.marks_list == True:
-    countries = marksCountries
-
 def cidr_convert(total):
     '''Converts Total amount of IP addresses to coresponding cidr notation
        address block, takes a single number'''
@@ -96,6 +83,15 @@ def date_convert(indate):
         return "Unknown		"
     else:
         return datetime.date(year,month,day).strftime("%A %d. %B %Y")
+
+def strip_comments(inList):
+    '''Strips out lines that start with # from a list that contains a dump of a file. returns a list without the lines that start with #. please not it does not work with lines that have comments at the end.(not needed for this program)'''
+    fileLines = []
+    for line in inList:
+        li=line.strip()
+        if not li.startswith("#"):
+            fileLines.append(line)
+    return fileLines
 
 def print_metadata():
     '''Prints ARIN status file data in human readable format. '''
@@ -179,12 +175,24 @@ def FilterDates(dateIn,operator,fileLines):
             continue
         elif operator == "before":
             if int(line[5]) < dateIn:
-                filteredLines.append("|".join(line))
+                filteredLines.append(d.join(line))
         elif operator == "after":
             if int(line[5]) > dateIn:
-                filteredLines.append("|".join(line))
+                filteredLines.append(d.join(line))
     return filteredLines
 #----Below here this is run in order, check to see if each test is called for, and run if applicable ----#
+
+#proccess the country list
+
+#default is using mark's list of countries.
+countries = marksCountries
+if args.cc != None:
+    args.cc = args.cc.upper()
+    countries = args.cc.split()
+elif args.iso_list == True:
+    countries = allCountries
+elif args.marks_list == True:
+    countries = marksCountries
 
 import sys, os.path
 #Now with more awesomesauce, we can now check as many files are entered on the command line, now except * and ? expansions for max win, and much grepping. proc_arininfo.py -a *|grep whatever now works
@@ -198,32 +206,23 @@ for filename in args.filenames:
     infile = open(filename,"r")
     filelines = infile.readlines()
     infile.close()
+    ### This section performs filtering on file lines before analyzation ###
     #Strip out comments
-    filelines2 = []
-    for line in filelines:
-        li=line.strip()
-        if not li.startswith("#"):
-            filelines2.append(line)
-    filelines = filelines2
-    del(filelines2)
+    filelines = strip_comments(filelines)
+    #now check to see if we have valid data, if not, skip this file.
+    meta_list = filelines[0].split(d)
+    if len(meta_list) != 7:
+        print(filename,"is not an ARIN statistics file!")
+        continue
     #Now filter dates as set in args
     if args.before_date != None:
         filelines = FilterDates(args.before_date,"before",filelines)
     if args.after_date != None:
         filelines = FilterDates(args.after_date,"after",filelines)
-    #now check to see if we have valid data
-    meta_list = filelines[0].split(d)
-    if len(meta_list) != 7:
-        print(args.filename,"File is not an ARIN statistics file!")
-        continue
+    ### End filtering Section ###
     class file_meta:
-        version = meta_list[0]
-        name = meta_list[1]
-        serial = meta_list[2]
-        total = meta_list[3]
-        startdate = meta_list[4];enddate = meta_list[5]
-        offset = meta_list[6]
         filename = filename
+        version, name, serial, total, startdate, enddate, offset = meta_list
     ipList = []
     if args.info == True or args.all == True:
         print_metadata()
