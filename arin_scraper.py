@@ -11,29 +11,8 @@
 #The delimeter for fields that ARIN uses
 d="|"
 
-#Counrties on Mark's list. See ticket in header.
-marksCountries=['AO', 'BJ', 'BW', 'BF', 'BI', 'CM', 'CV', 'CF', 'TD', 'CD', 'GQ', 'EG', 'ER', 'ET', 'GA', 'GM', 'GH', 'GN', 'GW', 'GY', 'CI', 'KE', 'LS', 'LY', 'MG', 'MW', 'ML', 'MR', 'MU', 'YT', 'MA', 'MZ', 'NA', 'NE', 'NG', 'CG', 'RW', 'SN', 'SC', 'SO', 'ZA', 'SZ', 'TZ', 'TG', 'TN', 'UG', 'EH', 'ZM', 'ZW', 'AP', 'AS', 'AU', 'BD', 'BY', 'BT', 'MM', 'KH', 'CN', 'CX', 'FJ', 'PF', 'GU', 'HK', 'IN', 'ID', 'JP', 'KI', 'LA', 'MO', 'MY', 'MV', 'MH', 'MN', 'NP', 'NZ', 'KP', 'PK', 'PH', 'WS', 'SG', 'KR', 'LK', 'TW', 'TH', 'TO', 'VU', 'VN', 'GL', 'IS', 'EU', 'DZ', 'HG', 'BN', 'HR', 'CY', 'XK', 'LV', 'MK', 'MT', 'MD', 'ME', 'RS', 'SK', 'SI', 'AL', 'AD', 'DK', 'FO', 'FR', 'GI', 'VA', 'IE', 'IM', 'JE', 'LU', 'MC', 'PT', 'ES', 'GB', 'AT', 'BE', 'BG', 'CH', 'CZ', 'DE', 'EE', 'FI', 'GR', 'HU', 'IT', 'NL', 'LI', 'LT', 'NO', 'PL', 'RO', 'RU', 'SE', 'UA', 'AF', 'AM', 'AZ', 'BH', 'IO', 'GE', 'IR', 'IQ', 'IL', 'JO', 'KZ', 'KW', 'KG', 'LB', 'LR', 'OM', 'QA', 'SA', 'SD', 'SY', 'TJ', 'TR', 'TM', 'AE', 'UZ', 'YE', 'AG', 'AI', 'AQ', 'AR', 'AW', 'BS', 'BB', 'BZ', 'BM', 'BO', 'BR', 'VG', 'CL', 'CO', 'CR', 'CU', 'DM', 'DO', 'EC', 'SV', 'FK', 'GD', 'GT', 'HT', 'HN', 'JM', 'MS', 'MX', 'NI', 'PA', 'PY', 'PE', 'PR', 'SR', 'TT', 'UY', 'VI', 'VE']
-
-#All ISO 3166-1 country codes, to make the script more unversal
-allCountries=['AF', 'AX', 'AL', 'DZ', 'AS', 'AD', 'AO', 'AI', 'AQ', 'AG', 'AR', 'AM', 'AW', 'AU', 'AT', 'AZ', 'BS', 'BH', 'BD', 'BB', 'BY', 'BE', 'BZ', 'BJ', 'BM', 'BT', 'BO', 'BQ', 'BA', 'BW', 'BV', 'BR', 'IO', 'BN', 'BG', 'BF', 'BI', 'KH', 'CM', 'CA', 'CV', 'KY', 'CF', 'TD', 'CL', 'CN', 'CX', 'CC', 'CO', 'KM', 'CG', 'CD', 'CK', 'CR', 'CI', 'HR', 'CU', 'CW', 'CY', 'CZ', 'DK', 'DJ', 'DM', 'DO', 'EC', 'EG', 'SV', 'GQ', 'ER', 'EE', 'ET', 'FK', 'FO', 'FJ', 'FI', 'FR', 'GF', 'PF', 'TF', 'GA', 'GM', 'GE', 'DE', 'GH', 'GI', 'GR', 'GL', 'GD', 'GP', 'GU', 'GT', 'GG', 'GN', 'GW', 'GY', 'HT', 'HM', 'VA', 'HN', 'HK', 'HU', 'IS', 'IN', 'ID', 'IR', 'IQ', 'IE', 'IM', 'IL', 'IT', 'JM', 'JP', 'JE', 'JO', 'KZ', 'KE', 'KI', 'KP', 'KR', 'KW', 'KG', 'LA', 'LV', 'LB', 'LS', 'LR', 'LY', 'LI', 'LT', 'LU', 'MO', 'MK', 'MG', 'MW', 'MY', 'MV', 'ML', 'MT', 'MH', 'MQ', 'MR', 'MU', 'YT', 'MX', 'FM', 'MD', 'MC', 'MN', 'ME', 'MS', 'MA', 'MZ', 'MM', 'NA', 'NR', 'NP', 'NL', 'NC', 'NZ', 'NI', 'NE', 'NG', 'NU', 'NF', 'MP', 'NO', 'OM', 'PK', 'PW', 'PS', 'PA', 'PG', 'PY', 'PE', 'PH', 'PN', 'PL', 'PT', 'PR', 'QA', 'RE', 'RO', 'RU', 'RW', 'BL', 'SH', 'KN', 'LC', 'MF', 'PM', 'VC', 'WS', 'SM', 'ST', 'SA', 'SN', 'RS', 'SC', 'SL', 'SG', 'SX', 'SK', 'SI', 'SB', 'SO', 'ZA', 'GS', 'SS', 'ES', 'LK', 'SD', 'SR', 'SJ', 'SZ', 'SE', 'CH', 'SY', 'TW', 'TJ', 'TZ', 'TH', 'TL', 'TG', 'TK', 'TO', 'TT', 'TN', 'TR', 'TM', 'TC', 'TV', 'UG', 'UA', 'AE', 'GB', 'US', 'UM', 'UY', 'UZ', 'VU', 'VE', 'VN', 'VG', 'VI', 'WF', 'EH', 'YE', 'ZM', 'ZW']
-
-class colors:
-    '''abridged colors class for this script use as colors.[reset|bold|underline] or colors.fg.<colorname>'''
-    reset='\033[0m'
-    bold='\033[01m'
-    underline='\033[04m'
-    class fg:
-        red='\033[31m'
-        green='\033[32m'
-        blue='\033[34m'
-        cyan='\033[36m'
-        lightgrey='\033[37m'
-        darkgrey='\033[90m'
-        lightred='\033[91m'
-        lightgreen='\033[92m'
-        yellow='\033[93m'
-        lightblue='\033[94m'
-        lightcyan='\033[96m'
+#All static Dictionaries moved to the big dictionary file.
+from bigDict import *
 
 #argument parsing code.
 import argparse
@@ -163,6 +142,9 @@ def nmapScanHosts(targetList,opts):
             validHosts.append(host)
     return validHosts
 
+def ASN2IPrange(asnList):
+
+
 def FilterDates(dateIn,operator,fileLines):
     '''three operators, an 8 digit number in the YEARMONTHDAY formart, a string with either "before", or "after", and the filelines list. Returned is the file list with only relivant dates'''
     filteredLines = []
@@ -187,6 +169,9 @@ def FilterDates(dateIn,operator,fileLines):
 #default is using mark's list of countries.
 countries = marksCountries
 if args.cc != None:
+#    for country in ccLookupTable:
+#        if country in args.cc:
+#            args.cc.replace(country,ccLookupTable[country])
     args.cc = args.cc.upper()
     countries = args.cc.split()
 elif args.iso_list == True:
