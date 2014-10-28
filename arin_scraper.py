@@ -29,9 +29,15 @@ filter_type.add_argument("-6","--ipv6",help="Display IPv6 IP Blocks",action="sto
 filter_type.add_argument("-n","--asn",help="Display Autonomous System Numbers(ASN)",action="store_true")
 filter_type.add_argument("-b","--before-date",help="List entries before specified date. Use 8 digit YEARMONTHDAY format",type=int)
 filter_type.add_argument("-e","--after-date",help="List entries after specified date. Use 8 digit YEARMONTHDAY format",type=int)
+
 nmap_opts = parser.add_argument_group("NMAP Options","discover hosts on matching IP address blocks using nmap IP scanner")
 nmap_opts.add_argument("-N","--nmap",help="Scan Matching IP Address Ranges with NMAP",action="store_true")
 nmap_opts.add_argument("-O","--nmap-opts",help="Command line options to use with NMAP",type=str,default='-T5 -sn --max-retries 5')
+
+asn_opts = parser.add_argument_group("ASN Resolve Options","use whois to resolve ip address blocks to proccess further")
+asn_opts.add_argument("-w","--asn2ipblocks",help="Use 'whois' To Find IPaddress Blocks Associated With ASNumber",action="store_true")
+asn_opts.add_argument("-s","--whois-server",help="ARIN Whois Server To User",type=str)
+
 dict_group = parser.add_argument_group("Dictionary Options:","Specify list of country codes to use")
 use_dict = dict_group.add_mutually_exclusive_group()
 use_dict.add_argument("-C","--cc",help="Country Codes: Use specified country codes instead of built in lists(space seperated ISO 3166-1 valid entries)",type=str)
@@ -112,9 +118,6 @@ def print_ip_list(ipList):
             print(ip)
 
 def list_AS_numbers(filelines):
-    '''Print all the Autonomous Systems listed in the file, takes one variable, a list with the filelines in it'''
-    print(colors.bold,colors.fg.yellow,"	Autonomous System Numbers",colors.reset)
-    print(colors.bold,"Country Code	AS Number",colors.reset)
     outList = []
     for cc in countries:
         for line in filelines:
@@ -122,16 +125,23 @@ def list_AS_numbers(filelines):
             if len(line) < 7:
                 continue
             elif line[1] == cc and line[2] == "asn":
-                print(line[1]+"		"+line[3])
                 outList.append(line)
     return outList
 
-def ASN_list_ip_blocks(asnlist,mirror):
-    import asnwhois
-    ipblocks = []
+def print_AS_Numners(asnlist):
+    '''Print all the Autonomous Systems listed in the file, takes one variable, a list with the filelines in it'''
+    print(colors.bold,colors.fg.yellow,"	Autonomous System Numbers",colors.reset)
+    print(colors.bold,"Country Code	AS Number",colors.reset)
     for asn in asnlist:
-        ipblocks.append(ASNWhois.ASN_meta_data(asn,mirror))
-    return ipblocks
+        print(asn[1]+"		"+asn[3])
+
+def ASN_list_ip_blocks(asnlist,mirror):
+    from asnwhois import ASNWhois
+    outList = []
+    for asn in asnlist:
+        asn = "AS" + asn[3]
+        outList += ASNWhois.get_ipblocks(asn,mirror)
+    return outList
 
 def nmapScanHosts(targetList,opts):
     '''Takes an input of a list of targets(see nmap help), and raw command line options for nmap, and
@@ -212,25 +222,37 @@ for filename in args.filenames:
     class file_meta:
         filename = filename
         version, name, serial, total, startdate, enddate, offset = meta_list
-    ipList = []
+    asn_list = []
+    ipv4List = []
+    ipv6List = []
+    ipv4BlockList = []
+    ipv6BlockList = []
     if args.info == True or args.all == True:
         print_metadata()
     if args.ipv4 == True or args.all == True:
-        ipBlockList = list_ip_blocks(filelines,"ipv4")
+        ipv4BlockList = list_ip_blocks(filelines,"ipv4")
         if args.nmap == True:
-           ipList += nmapScanHosts(ipBlockList,args.nmap_opts)
+           ipv4List += nmapScanHosts(ipBlockList,args.nmap_opts)
         else:
             print_ip_block_list(ipBlockList,"IPv4")
+
     if args.ipv6 == True or args.all == True:
-        ipBlockList = list_ip_blocks(filelines,"ipv6")
+        ipv6BlockList = list_ip_blocks(filelines,"ipv6")
         if args.nmap == True:
-           ipList += nmapScanHosts(ipBlockList,args.nmap_opts)
+           ipv6List += nmapScanHosts(ipBlockList,args.nmap_opts)
         else:
             print_ip_block_list(ipBlockList,"IPv6")
+
     if args.nmap == True:
-        print_ip_list(ipList)
+        print_ip_list(ipv4List)
+        print_ip_list(ipv6List)
 
     if args.asn == True or args.all == True:
-        list_AS_numbers(filelines)
+        asn_list = list_AS_numbers(filelines)
+        if args.asn2ipblocks == True:
+            ipBlockList = ASN_list_ip_blocks(asn_list,args.whois_server)
+            print_ip_list(ipBlockList)
+        else:
+            print_AS_Numners(asn_list)
 
 exit()
