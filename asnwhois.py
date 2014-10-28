@@ -29,7 +29,6 @@ class ASNWhois:
         outDict = {}
         for line in indata:
             block = line.split()
-            print(block)
             if len(block) > 1:
                 key   = block[0].strip(":,;")
                 value = ' '.join(block[1:])
@@ -42,6 +41,7 @@ class ASNWhois:
         ipblocks = []
 
 def arinwhois_infile_proc(indata):
+    '''Strip comments, control characters, and return the input in a list of lines'''
     indata = str(indata).strip()
     indata = indata.strip("b'")
     inList = indata.split('\\n')
