@@ -2,75 +2,52 @@
 
 import subprocess
 class ASNWhois:
-    '''The ASN whois class uses UNIX 'whois' to return data about an ASN number''''
-    def ipblocks(ASN,mirror):
-    '''This function returns a list of all ip address blocks from a given ASN number, takes two options, the ASN number, as typed into whois, and the name of the whois server'''
-        indata = subprocess.check_output(["whois","-h",mirror,"-i","origin","-T","route",ASN])
-        indata = str(indata).split('\\n')
-        indata = strip_arinfile_comments(indata)
+    '''The ASN whois class uses UNIX 'whois' to return data about an ASN number'''
+    def get_ipblocks(ASN,mirror):
+        '''This function returns a list of all ip address blocks from a given ASN number, takes two options, the ASN number, as typed into whois, and the name of the whois server'''
+        if mirror == None:
+            indata = subprocess.check_output(["whois","-i","origin","-T","route",ASN])
+        else:
+            indata = subprocess.check_output(["whois","-h",mirror,"-i","origin","-T","route",ASN])
+        indata = arinwhois_infile_proc(indata)
         outList = []
         for line in indata:
             if "route:" in line:
                 block = line.split()[1]
                 outList.append(block)
+        ASNWhois.value.ipblocks = outList
+        ASNWhois.value.asn = ASN
         return outList
 
     def get_ASN_meta_data(ASN,mirror):
-    '''This function returns a list with some metadata from whois <ASNumber>, in the following format:
+        '''Returns a list with metadata from whois <ASNumber>, in the following format:
        source,as_name,description,org,status,organization_name,organization_type,person,abuse_email'''
-        indata = subprocess.check_output(["whois","-h",mirror,ASN])
-        indata = str(indata).split('\\n')
-        indata = strip_arinfile_comments(indata)
-        outList = []
+        if mirror == None:
+            indata = str(subprocess.check_output(["whois",ASN]))
+        else:
+            indata = str(subprocess.check_output(["whois",ASN,"-h",mirror]))
+        indata = arinwhois_infile_proc(indata)
+        outDict = {}
         for line in indata:
-            if "source:" in line:
-                block = line.split()[1]
-                outList.append(block)
-            elif "as-name:" in line:
-                block = line.split()[1]
-                outList.append(block)
-            elif "desc:" in line:
-                block = line.split("   ")[-1]
-                outList.append(block)
-            elif "org:" in line:
-                block = line.split()[1]
-                outList.append(block)
-            elif "status:" in line:
-                block = line.split()[1]
-                outList.append(block)
-            elif "org-name:" in line:
-                block = line.split("   ")[-1]
-                outList.append(block)
-            elif "org-type:" in line:
-                block = line.split()[1]
-                outList.append(block)
-            elif "person:" in line:
-                block = line.split("   ")[-1]
-                outList.append(block)
-            elif "abuse-mailbox:" in line:
-                block = line.split()[1]
-                outList.append(block)
-          meta.source,meta.as_name,meta.description,meta.org,meta.status,meta.organization_name,meta.organization_type,meta.person,meta.abuse_email = tuple(outList)
-          return outList
+            block = line.split()
+            print(block)
+            if len(block) > 2:
+                outDict[block[0].strip(":,;")] = block[1].strip(":,;")
+            #print(block)            
+        return outDict
 
-    class meta:
+    class value:
         '''Run get_ASN_meta_data() to populate this sub-class'''
-        source=""
-        as_name=""
-        descripion=""
-        org=""
-        status=""
-        organization_name=""
-        organization_type=""
-        person=""
-        abuse_email=""
+        asn=""
+        ipblocks = []
 
-def strip_arinfile_comments(inList):
-    '''Strips out lines that start with % from a list that contains a dump of a file. returns a list without the lines that start with %. please not it does not work with lines that have comments at the end.(not needed for this program)'''
+def arinwhois_infile_proc(indata):
+    indata = str(indata).strip()
+    indata = indata.strip("b'")
+    inList = indata.split('\\n')
     fileLines = []
     for line in inList:
         li=line.strip()
-        if not li.startswith("%"):
+        if not li.startswith("%") and not li.startswith("#") and li != "":
             fileLines.append(line)
     return fileLines
-
