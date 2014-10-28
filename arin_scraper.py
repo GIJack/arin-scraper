@@ -14,9 +14,6 @@ d="|"
 #All static lookup tables moved to the "Big Dictionary" file.
 from bigDict import *
 
-#until I find somewhere else to put this
-#from asnwhois import *
-
 #argument parsing code.
 import argparse
 
@@ -31,7 +28,7 @@ filter_type.add_argument("-4","--ipv4",help="Display IPv4 IP Blocks",action="sto
 filter_type.add_argument("-6","--ipv6",help="Display IPv6 IP Blocks",action="store_true")
 filter_type.add_argument("-n","--asn",help="Display Autonomous System Numbers(ASN)",action="store_true")
 filter_type.add_argument("-b","--before-date",help="List entries before specified date. Use 8 digit YEARMONTHDAY format",type=int)
-filter_type.add_argument("-f","--after-date",help="List entries after specified date. Use 8 digit YEARMONTHDAY format",type=int)
+filter_type.add_argument("-e","--after-date",help="List entries after specified date. Use 8 digit YEARMONTHDAY format",type=int)
 nmap_opts = parser.add_argument_group("NMAP Options","discover hosts on matching IP address blocks using nmap IP scanner")
 nmap_opts.add_argument("-N","--nmap",help="Scan Matching IP Address Ranges with NMAP",action="store_true")
 nmap_opts.add_argument("-O","--nmap-opts",help="Command line options to use with NMAP",type=str,default='-T5 -sn --max-retries 5')
@@ -128,6 +125,13 @@ def list_AS_numbers(filelines):
                 print(line[1]+"		"+line[3])
                 outList.append(line)
     return outList
+
+def ASN_list_ip_blocks(asnlist,mirror):
+    import asnwhois
+    ipblocks = []
+    for asn in asnlist:
+        ipblocks.append(ASNWhois.ASN_meta_data(asn,mirror))
+    return ipblocks
 
 def nmapScanHosts(targetList,opts):
     '''Takes an input of a list of targets(see nmap help), and raw command line options for nmap, and
