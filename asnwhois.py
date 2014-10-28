@@ -19,9 +19,8 @@ class ASNWhois:
         ASNWhois.value.asn = ASN
         return outList
 
-    def get_ASN_meta_data(ASN,mirror):
-        '''Returns a list with metadata from whois <ASNumber>, in the following format:
-       source,as_name,description,org,status,organization_name,organization_type,person,abuse_email'''
+    def ASN_meta_data(ASN,mirror):
+        '''Returns a dict with metadata from whois <ASNumber> with key:values for all data returned'''
         if mirror == None:
             indata = str(subprocess.check_output(["whois",ASN]))
         else:
@@ -31,9 +30,10 @@ class ASNWhois:
         for line in indata:
             block = line.split()
             print(block)
-            if len(block) > 2:
-                outDict[block[0].strip(":,;")] = block[1].strip(":,;")
-            #print(block)            
+            if len(block) > 1:
+                key   = block[0].strip(":,;")
+                value = ' '.join(block[1:])
+                outDict[key] = value
         return outDict
 
     class value:
