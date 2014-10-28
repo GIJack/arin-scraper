@@ -11,8 +11,11 @@
 #The delimeter for fields that ARIN uses
 d="|"
 
-#All static Dictionaries moved to the big dictionary file.
+#All static lookup tables moved to the "Big Dictionary" file.
 from bigDict import *
+
+#until I find somewhere else to put this
+#from asnwhois import *
 
 #argument parsing code.
 import argparse
@@ -142,9 +145,6 @@ def nmapScanHosts(targetList,opts):
             validHosts.append(host)
     return validHosts
 
-def ASN2IPrange(asnList):
-
-
 def FilterDates(dateIn,operator,fileLines):
     '''three operators, an 8 digit number in the YEARMONTHDAY formart, a string with either "before", or "after", and the filelines list. Returned is the file list with only relivant dates'''
     filteredLines = []
@@ -169,9 +169,9 @@ def FilterDates(dateIn,operator,fileLines):
 #default is using mark's list of countries.
 countries = marksCountries
 if args.cc != None:
-#    for country in ccLookupTable:
-#        if country in args.cc:
-#            args.cc.replace(country,ccLookupTable[country])
+    for country in ccLookupTable:
+        if country in args.cc:
+            args.cc = args.cc.replace(country,ccLookupTable[country])
     args.cc = args.cc.upper()
     countries = args.cc.split()
 elif args.iso_list == True:
