@@ -9,7 +9,7 @@ class ASNWhois:
             indata = subprocess.check_output(["whois","-i","origin","-T","route",ASN])
         else:
             indata = subprocess.check_output(["whois","-h",mirror,"-i","origin","-T","route",ASN])
-        indata = arinwhois_infile_proc(indata)
+        indata = ASNWhois.infile_proc(indata)
         outList = []
         for line in indata:
             if "route:" in line:
@@ -25,7 +25,7 @@ class ASNWhois:
             indata = str(subprocess.check_output(["whois",ASN]))
         else:
             indata = str(subprocess.check_output(["whois",ASN,"-h",mirror]))
-        indata = arinwhois_infile_proc(indata)
+        indata = ASNWhois.infile_proc(indata)
         outDict = {}
         for line in indata:
             block = line.split()
@@ -40,14 +40,14 @@ class ASNWhois:
         asn=""
         ipblocks = []
 
-def arinwhois_infile_proc(indata):
-    '''Strip comments, control characters, and return the input in a list of lines'''
-    indata = str(indata).strip()
-    indata = indata.strip("b'")
-    inList = indata.split('\\n')
-    fileLines = []
-    for line in inList:
-        li=line.strip()
-        if not li.startswith("%") and not li.startswith("#") and li != "":
-            fileLines.append(line)
-    return fileLines
+    def infile_proc(indata):
+        '''Strip comments, control characters, and return the input in a list of lines'''
+        indata = str(indata).strip()
+        indata = indata.strip("b'")
+        inList = indata.split('\\n')
+        fileLines = []
+        for line in inList:
+            li=line.strip()
+            if not li.startswith("%") and not li.startswith("#") and li != "":
+                fileLines.append(line)
+        return fileLines
