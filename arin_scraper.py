@@ -49,7 +49,7 @@ def cidr_convert(total):
     '''Converts Total amount of IP addresses to coresponding cidr notation
        address block, takes a single number'''
     total = str(total)
-    cidr_dict = { '131072':"/15", '65536':"/16", '32768':"/17", '16384':"/18", '8192':"/19", '4096':"/20", '2048':"/21", '1024':"/22", '512':"/23", '256':"/24" ,'128':"/25", '64':"/26", '32':"/27", '16':"/28", '8':"/29"}
+    cidr_dict = { '16777214':"/8", '8388352':"/9", '4194176':"/10", '2097088':"/11", '1048544':"/12", '524272':"/13", '262136':"/14", '131072':"/15", '65536':"/16", '32768':"/17", '16384':"/18", '8192':"/19", '4096':"/20", '2048':"/21", '1024':"/22", '512':"/23", '256':"/24" ,'128':"/25", '64':"/26", '32':"/27", '16':"/28", '8':"/29"}
     if total in cidr_dict:
         return cidr_dict[total]
     else:
@@ -70,7 +70,7 @@ def date_convert(indate):
         return datetime.date(year,month,day).strftime("%A %d. %B %Y")
 
 def strip_comments(inList):
-    '''Strips out lines that start with # from a list that contains a dump of a file. returns a list without the lines that start with #. please not it does not work with lines that have comments at the end.(not needed for this program)'''
+    '''Strips out lines that start with # from a list that contains a dump of a file. please note it does not work with lines that have comments at the end.'''
     fileLines = []
     for line in inList:
         li=line.strip()
