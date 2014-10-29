@@ -109,13 +109,29 @@ def list_ip_blocks(filelines,ver):
 def print_ip_block_list(ipBlockList,ver):
     print(colors.bold,colors.fg.yellow,"	",ver,"Address blocks",colors.reset)
     print(colors.bold,"Country Code	IPBlock	 	CIDR Block",colors.reset)
-    for line in ipBlockList:
-        print(line[1]+"		"+line[3]+"	"+line[4])
+    if ver == "ASN":
+        for line in ipBlockList:
+            if len(line[3]) > 2:
+                print(colors.fg.orange," "+line[1],colors.reset)
+                for i in range(len(line[3])):
+                    if i == 0:
+                        print(colors.fg.orange," "+line[1],colors.reset+"--AS"+line[3][0])
+                        print("         \\")
+                    else:
+                        print("          |-"+line[3][i])
+    else:
+        for line in ipBlockList:
+            print(colors.fg.orange,line[1],colors.reset+"		"+line[3]+"	"+line[4])
 
 def print_ip_list(ipList):
-        print(colors.bold,colors.fg.yellow,"	IP Addresses",colors.reset)
-        for ip in ipList:
-            print(ip)
+        print(colors.bold,colors.fg.yellow,"IP Addresses",colors.reset)
+        for ipblock in ipList:
+            for i in range(len(ipblock)):
+                if i == 0:
+                    print(colors.bold+colors.fg.blue,ipblock[0],colors.reset)
+                    print("         \\")
+                else:
+                    print("          |-"+ipblock[i])
 
 def list_AS_numbers(filelines):
     outList = []
@@ -133,14 +149,17 @@ def print_AS_Numners(asnlist):
     print(colors.bold,colors.fg.yellow,"	Autonomous System Numbers",colors.reset)
     print(colors.bold,"Country Code	AS Number",colors.reset)
     for asn in asnlist:
-        print(asn[1]+"		"+asn[3])
+        print(colors.fg.orange,asn[1],colors.reset+"		"+asn[3])
 
 def ASN_list_ip_blocks(asnlist,mirror):
     from asnwhois import ASNWhois
     outList = []
     for asn in asnlist:
-        asn = "AS" + asn[3]
-        outList += ASNWhois.get_ipblocks(asn,mirror)
+        target = "AS" + asn[3]
+        oldasn = asn[3]
+        asn[3] = ASNWhois.get_ipblocks(target,mirror)
+        asn[3].insert(0,oldasn)
+        outList.append(asn)
     return outList
 
 def nmapScanHosts(targetList,opts):
@@ -153,10 +172,15 @@ def nmapScanHosts(targetList,opts):
     opts = str(opts)
     scanner = nmap.PortScanner()
     validHosts = []
-    scanner.scan(hosts=' '.join(scanTargets), ports=None, arguments=opts)
-    for host in scanner.all_hosts():
-        if scanner[host].state() == 'up':
-            validHosts.append(host)
+    #scanner.scan(hosts=' '.join(scanTargets), ports=None, arguments=opts)
+    for target in scanTargets:
+        targetHosts = []
+        scanner.scan(hosts=target, ports=None, arguments=opts)
+        for host in scanner.all_hosts():
+            if scanner[host].state() == 'up':
+                targetHosts.append(host)
+        validHosts.append(targetHosts)
+        targetHosts.insert(0,target)
     return validHosts
 
 def FilterDates(dateIn,operator,fileLines):
@@ -232,27 +256,32 @@ for filename in args.filenames:
     if args.ipv4 == True or args.all == True:
         ipv4BlockList = list_ip_blocks(filelines,"ipv4")
         if args.nmap == True:
-           ipv4List += nmapScanHosts(ipBlockList,args.nmap_opts)
+           ipv4List += nmapScanHosts(ipv4BlockList,args.nmap_opts)
         else:
-            print_ip_block_list(ipBlockList,"IPv4")
+            print_ip_block_list(ipv4BlockList,"IPv4")
 
     if args.ipv6 == True or args.all == True:
         ipv6BlockList = list_ip_blocks(filelines,"ipv6")
         if args.nmap == True:
-           ipv6List += nmapScanHosts(ipBlockList,args.nmap_opts)
+           ipv6List += nmapScanHosts(ipv6BlockList,args.nmap_opts)
         else:
-            print_ip_block_list(ipBlockList,"IPv6")
-
-    if args.nmap == True:
-        print_ip_list(ipv4List)
-        print_ip_list(ipv6List)
+            print_ip_block_list(ipv6BlockList,"IPv6")
 
     if args.asn == True or args.all == True:
         asn_list = list_AS_numbers(filelines)
         if args.asn2ipblocks == True:
-            ipBlockList = ASN_list_ip_blocks(asn_list,args.whois_server)
-            print_ip_list(ipBlockList)
+            ipv4BlockList = ASN_list_ip_blocks(asn_list,args.whois_server)
+            if args.nmap == True:
+                print(ipv4BlockList)
+                exit()
+                ipv4List += nmapScanHosts(ipv4BlockList,args.nmap_opts)
+            else:
+                print_ip_block_list(ipv4BlockList,"ASN")
         else:
             print_AS_Numners(asn_list)
+
+    if args.nmap == True:
+        print_ip_list(ipv4List)
+        print_ip_list(ipv6List)
 
 exit()
