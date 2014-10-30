@@ -106,34 +106,39 @@ def list_ip_blocks(filelines,ver):
                     outList.append(line)
     return outList
 
-def print_ip_block_list(ipBlockList,ver):
-    print(colors.bold,colors.fg.yellow,"	",ver,"Address blocks",colors.reset)
-    print(colors.bold,"Country Code	IPBlock	 	CIDR Block",colors.reset)
+def print_ip_block_list(ipBlockList,ver,print_opts):
+    '''Prints IPBlocks, expands using tree structure if need be.'''
+    if ver != "ASN":
+        print(colors.bold,colors.fg.yellow,"	",ver,"Address blocks",colors.reset)
+        print(colors.bold,"Country Code	IPBlock	 	CIDR",colors.reset)
     if ver == "ASN":
-        for line in ipBlockList:
-            if len(line[3]) > 2:
-                print(colors.fg.orange," "+line[1],colors.reset)
-                for i in range(len(line[3])):
-                    if i == 0:
-                        print(colors.fg.orange," "+line[1],colors.reset+"--AS"+line[3][0])
-                        print("         \\")
-                    else:
-                        print("          |-"+line[3][i])
-    else:
-        for line in ipBlockList:
-            print(colors.fg.orange,line[1],colors.reset+"		"+line[3]+"	"+line[4])
-
-def print_ip_list(ipList):
-        print(colors.bold,colors.fg.yellow,"IP Addresses",colors.reset)
-        for ipblock in ipList:
-            for i in range(len(ipblock)):
+        print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3][0])
+        if len(ipBlockList[3]) > 2:
+            for i in range(len(ipBlockList[3])):
                 if i == 0:
-                    print(colors.bold+colors.fg.blue,ipblock[0],colors.reset)
-                    print("         \\")
+
+                    print("	  \\")
                 else:
-                    print("          |-"+ipblock[i])
+                    print("	  |-"+ipBlockList[3][i])
+    else:
+        for i in range(len(ipBlockList)):
+            line = ipBlockList[i]
+            print(colors.fg.orange,line[1],colors.reset+"		"+colors.bold+colors.fg.cyan+line[3]+colors.reset+"	"+line[4])
+            if print_opts == "expand":
+                if len(ipv4List[i]) > 1:
+                    print("			\\")
+                    print_ip_list(ipv4List[i],None)
+
+def print_ip_list(ipList,print_opts):
+    '''prints IPs gotten from nmap in a tree structure '''
+    for i in range(len(ipList)):
+        if i == 0:
+            continue
+        else:
+            print("			|-"+ipList[i])
 
 def list_AS_numbers(filelines):
+    '''returns the lines of the list that are ASN entries, takes the filelist as unput'''
     outList = []
     for cc in countries:
         for line in filelines:
@@ -144,14 +149,20 @@ def list_AS_numbers(filelines):
                 outList.append(line)
     return outList
 
-def print_AS_Numners(asnlist):
+def print_AS_Numbers(asnlist,print_opts):
     '''Print all the Autonomous Systems listed in the file, takes one variable, a list with the filelines in it'''
-    print(colors.bold,colors.fg.yellow,"	Autonomous System Numbers",colors.reset)
-    print(colors.bold,"Country Code	AS Number",colors.reset)
+    print(colors.bold,colors.fg.yellow,"  Autonomous System Numbers",colors.reset)
+    print(colors.bold,"CC	ASNumber",colors.reset)
     for asn in asnlist:
-        print(colors.fg.orange,asn[1],colors.reset+"		"+asn[3])
+        if "expand" == print_opts:
+            print_ip_block_list(asn,"ASN",None)
+        elif "expand twice" == print_opts:
+            print_ip_block_list(asn,"ASN","expand")
+        else:
+            print(colors.fg.orange,asn[1],colors.reset+"	"+asn[3])
 
 def ASN_list_ip_blocks(asnlist,mirror):
+    '''Calls ASNWhois to get a list of ipblocks from ARIN databases, two opts, a list of ASNs, and whois mirror, None for defaults'''
     from asnwhois import ASNWhois
     outList = []
     for asn in asnlist:
@@ -201,9 +212,7 @@ def FilterDates(dateIn,operator,fileLines):
                 filteredLines.append(d.join(line))
     return filteredLines
 #----Below here this is run in order, check to see if each test is called for, and run if applicable ----#
-
-#proccess the country list
-
+##proccess the country list
 #default is using mark's list of countries.
 countries = marksCountries
 if args.cc != None:
@@ -217,11 +226,11 @@ elif args.iso_list == True:
 elif args.marks_list == True:
     countries = marksCountries
 
+#We do this one file at a time. This program is file oriented, as in transforming data in an ARIN status file.
 import sys, os.path
-#Now with more awesomesauce, we can now check as many files are entered on the command line, now except * and ? expansions for max win, and much grepping. proc_arininfo.py -a *|grep whatever now works
 for filename in args.filenames:
-#open target file and dump lines into a list
-#check to see if the file exists, if not exit gracefully with error messaage
+    #open target file and dump lines into a list
+    #check to see if the file exists, if not exit gracefully with error messaage
     if os.path.isfile(filename) == False:
         print(filename + ": No such file")
         sys.exit(1)
@@ -242,46 +251,67 @@ for filename in args.filenames:
         filelines = FilterDates(args.before_date,"before",filelines)
     if args.after_date != None:
         filelines = FilterDates(args.after_date,"after",filelines)
-    ### End filtering Section ###
-    class file_meta:
-        filename = filename
-        version, name, serial, total, startdate, enddate, offset = meta_list
+    #set up data structures to be used later.
     asn_list = []
     ipv4List = []
     ipv6List = []
     ipv4BlockList = []
     ipv6BlockList = []
+    class file_meta:
+        filename = filename
+        version, name, serial, total, startdate, enddate, offset = meta_list
+
+    ### gather and proccess data into lists###
+    ## Start with basic information gathering from the file
+    #start with IP addresses
+    if args.ipv4 == True or args.all == True:
+        ipv4BlockList += list_ip_blocks(filelines,"ipv4")
+    if args.ipv6 == True or args.all == True:
+        ipv6BlockList += list_ip_blocks(filelines,"ipv6")
+    #now do the same with ASNs.
+    if args.asn == True or args.all == True:
+        asn_list += list_AS_numbers(filelines)
+
+    ## Transforms. Now we start to use external programs to proccess/transform data into what we want.
+    #Start with the largest formation, the Autonomous System Number, use whois to get IPblocks. As of yet, we can't seem to find IPv6 data off ASN lookups, or differeniate. That will change eventually
+    if args.asn2ipblocks == True and len(asn_list) > 1:
+        ipv4BlockList += ASN_list_ip_blocks(asn_list,args.whois_server)
+    #Now we get into IPBlocks, or IP Networks, we use nmap to transform these into invidual IPs.
+    if args.nmap == True:
+        if len(ipv4BlockList) >= 1:
+            ipv4List += nmapScanHosts(ipv4BlockList,args.nmap_opts)
+        if len(ipv6BlockList) >= 1:
+            ipv6List += nmapScanHosts(ipv6BlockList,args.nmap_opts+" -6")
+
+    ### Print and output, Take processed data and return it ###
+    ## Header data. Real easy, just re-formated to be human readable, nothing more.
     if args.info == True or args.all == True:
         print_metadata()
-    if args.ipv4 == True or args.all == True:
-        ipv4BlockList = list_ip_blocks(filelines,"ipv4")
-        if args.nmap == True:
-           ipv4List += nmapScanHosts(ipv4BlockList,args.nmap_opts)
-        else:
-            print_ip_block_list(ipv4BlockList,"IPv4")
 
-    if args.ipv6 == True or args.all == True:
-        ipv6BlockList = list_ip_blocks(filelines,"ipv6")
-        if args.nmap == True:
-           ipv6List += nmapScanHosts(ipv6BlockList,args.nmap_opts)
-        else:
-            print_ip_block_list(ipv6BlockList,"IPv6")
-
-    if args.asn == True or args.all == True:
-        asn_list = list_AS_numbers(filelines)
-        if args.asn2ipblocks == True:
-            ipv4BlockList = ASN_list_ip_blocks(asn_list,args.whois_server)
-            if args.nmap == True:
-                print(ipv4BlockList)
-                exit()
-                ipv4List += nmapScanHosts(ipv4BlockList,args.nmap_opts)
-            else:
-                print_ip_block_list(ipv4BlockList,"ASN")
-        else:
-            print_AS_Numners(asn_list)
-
+    ## IP address handling, if there is a -4 or a -6 in the command line
+    #If version 4 blocks are requested, with no transform options
+    useipv4 = args.ipv4 or args.all
+    useipv6 = args.ipv6 or args.all
+    if useipv4 == True and args.nmap != True:
+        print_ip_block_list(ipv4BlockList,"IPv4",None)
+    #same with version 6
+    if useipv6 == True and args.nmap != True:
+        print_ip_block_list(ipv6BlockList,"IPv6",None)
+    #now check if nmap expansion is enabled
     if args.nmap == True:
-        print_ip_list(ipv4List)
-        print_ip_list(ipv6List)
+        if useipv4 == True:
+            print_ip_block_list(ipv4BlockList,"IPv4","expand")
+        if useipv6 == True:
+            print_ip_block_list(ipv6BlockList,"IPv6","expand")
 
+    ##ASN handling
+    useasn = args.asn == True or args.all == True
+    if useasn == True and args.asn2ipblocks != True:
+        print_AS_Numbers(asn_list,None)
+    elif useasn == True and args.asn2ipblocks == True:
+        if args.nmap != True:
+            print_AS_Numbers(asn_list,"expand")
+        #If nmap and whois are both selected, make a full tree:
+        elif args.nmap == True:
+            print_AS_Numbers(asn_list,"expand twice")
 exit()
