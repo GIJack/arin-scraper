@@ -112,14 +112,16 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
         print(colors.bold,colors.fg.yellow,"	",ver,"Address blocks",colors.reset)
         print(colors.bold,"Country Code	IPBlock	 	CIDR",colors.reset)
     if ver == "ASN":
-        print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3][0])
-        if len(ipBlockList[3]) > 2:
-            for i in range(len(ipBlockList[3])):
-                if i == 0:
-
-                    print("	  \\")
-                else:
-                    print("	  |-"+ipBlockList[3][i])
+        if type(ipBlockList[3]) == list:
+            print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3][0])
+            if len(ipBlockList[3]) > 1:
+                for i in range(len(ipBlockList[3])):
+                    if i == 0:
+                        print("	  \\")
+                    else:
+                        print("	  |-"+ipBlockList[3][i])
+        elif type(ipBlockList) == str:
+            print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3])
     else:
         for i in range(len(ipBlockList)):
             line = ipBlockList[i]
