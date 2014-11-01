@@ -21,14 +21,17 @@ parser = argparse.ArgumentParser(description='''This app parses data about ASNs 
 ftp://ftp.arin.net/pub/stats/''')
 parser.add_argument("filenames",nargs='+',help="files to proccess")
 
-filter_type = parser.add_argument_group("Filtering Options","show data that matches these parameters")
-filter_type.add_argument("-a","--all",help="Display All Information(equiv of -i46n)",action="store_true")
-filter_type.add_argument("-i","--info",help="Display Metadata From the First Line of the File",action="store_true")
-filter_type.add_argument("-4","--ipv4",help="Display IPv4 IP Blocks",action="store_true")
-filter_type.add_argument("-6","--ipv6",help="Display IPv6 IP Blocks",action="store_true")
-filter_type.add_argument("-n","--asn",help="Display Autonomous System Numbers(ASN)",action="store_true")
+data_type = parser.add_argument_group("Data Type Options","return/proccess lines matching these types")
+data_type.add_argument("-a","--all",help="Display All Information(equiv of -i46n)",action="store_true")
+data_type.add_argument("-i","--info",help="Display Header Metadata About The File",action="store_true")
+data_type.add_argument("-4","--ipv4",help="Display IPv4 IP Blocks",action="store_true")
+data_type.add_argument("-6","--ipv6",help="Display IPv6 IP Blocks",action="store_true")
+data_type.add_argument("-n","--asn",help="Display Autonomous System Numbers(ASN)",action="store_true")
+
+filter_type = parser.add_argument_group("Filtering Options","filter data according to the following options")
 filter_type.add_argument("-b","--before-date",help="List entries before specified date. Use 8 digit YEARMONTHDAY format",type=int)
 filter_type.add_argument("-e","--after-date",help="List entries after specified date. Use 8 digit YEARMONTHDAY format",type=int)
+filter_type.add_argument("-r","--regex",help="Regular Expression. Only Use Entries That Match this regular expression(not implemented yet)",action="store_true")
 
 proc_opts = parser.add_argument_group("Proccessing","Use NMAP and/or whois to expand IP Address Ranges and ASNumbers into more IP ranges and IP addresses respectively.")
 proc_opts.add_argument("-N","--nmap",help="Scan Matching IP Address Ranges with NMAP",action="store_true")
@@ -36,13 +39,12 @@ proc_opts.add_argument("-O","--nmap-opts",help="Command line options to use with
 proc_opts.add_argument("-w","--asn2ipblocks",help="Use 'whois' To Find IPaddress Blocks Associated With ASNumber",action="store_true")
 proc_opts.add_argument("-s","--whois-server",help="ARIN Whois Server To User",type=str)
 
-dict_group = parser.add_argument_group("Dictionary Options:","Specify list of country codes to use")
+dict_group = parser.add_argument_group("Dictionary Options","Specify list of country codes to use")
 use_dict = dict_group.add_mutually_exclusive_group()
 use_dict.add_argument("-C","--cc",help="Country Codes: Use specified country codes instead of built in lists(space seperated ISO 3166-1 valid entries)",type=str)
 use_dict.add_argument("-M","--marks-list",help="Use Mark's List of Countries"+colors.fg.lightcyan+ colors.bold+"(default)"+colors.reset,action="store_true")
 use_dict.add_argument("-S","--iso-list",help="Use List of Countries From ISO 3166-1(all of them)",action="store_true")
 args = parser.parse_args()
-
 def cidr_convert(total):
     '''Converts Total amount of IP addresses to coresponding cidr notation
        address block, takes a single number'''
