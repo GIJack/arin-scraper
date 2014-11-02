@@ -21,17 +21,17 @@ parser = argparse.ArgumentParser(description='''This app parses data about ASNs 
 ftp://ftp.arin.net/pub/stats/''')
 parser.add_argument("filenames",nargs='+',help="files to proccess")
 
-data_type = parser.add_argument_group("Data Type Options","return/proccess lines matching these types")
-data_type.add_argument("-a","--all",help="Display All Information(equiv of -i46n)",action="store_true")
-data_type.add_argument("-i","--info",help="Display Header Metadata About The File",action="store_true")
-data_type.add_argument("-4","--ipv4",help="Display IPv4 IP Blocks",action="store_true")
-data_type.add_argument("-6","--ipv6",help="Display IPv6 IP Blocks",action="store_true")
-data_type.add_argument("-n","--asn",help="Display Autonomous System Numbers(ASN)",action="store_true")
+data_type = parser.add_argument_group("Data Types","return/proccess lines matching these types")
+data_type.add_argument("-a","--all",help="All Information(equiv of -i46n)",action="store_true")
+data_type.add_argument("-i","--info",help="Metadata Information",action="store_true")
+data_type.add_argument("-4","--ipv4",help="IPv4 IP Blocks",action="store_true")
+data_type.add_argument("-6","--ipv6",help="IPv6 IP Blocks",action="store_true")
+data_type.add_argument("-n","--asn",help="Autonomous System Numbers(ASN)",action="store_true")
 
 filter_type = parser.add_argument_group("Filtering Options","filter data according to the following options")
 filter_type.add_argument("-b","--before-date",help="List entries before specified date. Use 8 digit YEARMONTHDAY format",type=int)
 filter_type.add_argument("-e","--after-date",help="List entries after specified date. Use 8 digit YEARMONTHDAY format",type=int)
-filter_type.add_argument("-r","--regex",help="Regular Expression. Only Use Entries That Match this regular expression(not implemented yet)",action="store_true")
+filter_type.add_argument("-r","--regex",help="Regular Expression. Only Use Entries That Match(not implemented yet)",action="store_true")
 
 proc_opts = parser.add_argument_group("Proccessing","Use NMAP and/or whois to expand IP Address Ranges and ASNumbers into more IP ranges and IP addresses respectively.")
 proc_opts.add_argument("-N","--nmap",help="Scan Matching IP Address Ranges with NMAP",action="store_true")
@@ -110,7 +110,7 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
     '''Prints IPBlocks, expands using tree structure if need be.'''
     if ver != "ASN":
         print(colors.bold,colors.fg.yellow,"	",ver,"Address blocks",colors.reset)
-        print(colors.bold,"Country Code	IPBlock	 	CIDR",colors.reset)
+        print(colors.bold,"CC	IPBlock	 	CIDR",colors.reset)
     if ver == "ASN":
         if type(ipBlockList[3]) == list:
             print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3][0])
@@ -127,10 +127,10 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
     else:
         for i in range(len(ipBlockList)):
             line = ipBlockList[i]
-            print(colors.fg.orange,line[1],colors.reset+"		"+colors.bold+colors.fg.cyan+line[3]+colors.reset+"	"+line[4])
+            print(colors.fg.orange,line[1],colors.reset+"	"+colors.bold+colors.fg.cyan+line[3]+colors.reset+"	"+line[4])
             if print_opts == "expand":
                 if len(ipv4List[i]) > 1:
-                    print("			\\")
+                    print("		\\")
                     print_ip_list(ipv4List[i],None)
 
 def print_ip_list(ipList,print_opts):
