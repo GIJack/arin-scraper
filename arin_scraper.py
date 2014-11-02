@@ -120,6 +120,8 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
                         print("	  \\")
                     else:
                         print("	  |-"+ipBlockList[3][i])
+                        if print_opts == "expand":
+                            print_ip_list([ipBlockList[3][i]],None)
         elif type(ipBlockList) == str:
             print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3])
     else:
