@@ -121,7 +121,7 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
                     else:
                         print("	  |-"+ipBlockList[3][i])
                         if print_opts == "expand":
-                            print_ip_list(ipv4List[ipBlockList[3][i]],"expand")
+                            print_ip_list(ipList[ipBlockList[3][i]],"expand")
         elif type(ipBlockList[3]) == str:
             print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3])
 
@@ -130,7 +130,7 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
             line = ipBlockList[i]
             print(colors.fg.orange,line[1],colors.reset+"	"+colors.bold+colors.fg.cyan+line[3]+colors.reset+"	"+line[4])
             if print_opts == "expand":
-                print_ip_list(ipv4List[line[3]+line[4]],None)
+                print_ip_list(ipList[line[3]+line[4]],None)
 
 def print_ip_list(ipList,print_opts):
     '''prints IPs gotten from nmap in a tree structure '''
@@ -138,7 +138,7 @@ def print_ip_list(ipList,print_opts):
     #if print_opts == "expand":
     #    spacing += "	"
     if len(ipList) > 0:
-        print("		\\")
+        print(spacing+"\\")
         for address in ipList:
             print(spacing+"|-"+address)
 
