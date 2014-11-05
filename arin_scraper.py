@@ -37,7 +37,7 @@ proc_opts = parser.add_argument_group("Proccessing","Use NMAP and/or whois to ex
 proc_opts.add_argument("-N","--nmap",help="Scan Matching IP Address Ranges with NMAP",action="store_true")
 proc_opts.add_argument("-O","--nmap-opts",help="Command line options to use with NMAP, defaults are:'-T5 -sn --max-retries 5'",type=str,default='-T5 -sn --max-retries 5')
 proc_opts.add_argument("-w","--asn2ipblocks",help="Use 'whois' To Find IPaddress Blocks Associated With ASNumber",action="store_true")
-proc_opts.add_argument("-s","--whois-server",help="ARIN Whois Server To User",type=str)
+proc_opts.add_argument("-h","--whois-server",help="ARIN Whois Server To User",type=str)
 
 dict_group = parser.add_argument_group("Dictionary Options","Specify list of country codes to use")
 use_dict = dict_group.add_mutually_exclusive_group()
