@@ -121,25 +121,26 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
                     else:
                         print("	  |-"+ipBlockList[3][i])
                         if print_opts == "expand":
-                            print_ip_list([ipBlockList[3][i]],None)
-        elif type(ipBlockList) == str:
+                            print_ip_list(ipv4List[ipBlockList[3][i]],"expand")
+        elif type(ipBlockList[3]) == str:
             print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3])
+
     else:
         for i in range(len(ipBlockList)):
             line = ipBlockList[i]
             print(colors.fg.orange,line[1],colors.reset+"	"+colors.bold+colors.fg.cyan+line[3]+colors.reset+"	"+line[4])
             if print_opts == "expand":
-                if len(ipv4List[i]) > 1:
-                    print("		\\")
-                    print_ip_list(ipv4List[i],None)
+                print_ip_list(ipv4List[line[3]+line[4]],None)
 
 def print_ip_list(ipList,print_opts):
     '''prints IPs gotten from nmap in a tree structure '''
-    for i in range(len(ipList)):
-        if i == 0:
-            continue
-        else:
-            print("			|-"+ipList[i])
+    spacing="		"
+    #if print_opts == "expand":
+    #    spacing += "	"
+    if len(ipList) > 0:
+        print("		\\")
+        for address in ipList:
+            print(spacing+"|-"+address)
 
 def list_AS_numbers(filelines):
     '''returns the lines of the list that are ASN entries, takes the filelist as unput'''
@@ -179,10 +180,17 @@ def ASN_list_ip_blocks(asnlist,mirror):
 
 def nmapScanHosts(targetList,opts):
     '''Takes an input of a list of targets(see nmap help), and raw command line options for nmap, and
-    scans all targets in targetList, and returns a list of valid hosts. the options of -T5 -sn --max-retries 5'''
+    scans all targets in targetList, and returns dictionary with, the subnet as a key, and a list of hosts as the value
+    the options of -T5 -sn --max-retries 5 are default'''
     scanTargets = []
     for line in targetList:
-           scanTargets.append(line[3]+line[4])
+           if line[2] == "asn":
+               for i in range(len(line[3])):
+                   if i == 0:
+                       continue
+                   scanTargets.append(line[3][i])
+           else:
+               scanTargets.append(line[3]+line[4])
     import nmap
     opts = str(opts)
     scanner = nmap.PortScanner()
@@ -196,7 +204,14 @@ def nmapScanHosts(targetList,opts):
                 targetHosts.append(host)
         validHosts.append(targetHosts)
         targetHosts.insert(0,target)
-    return validHosts
+    outDict = {}
+    for host in validHosts:
+        for i in range(len(host)):
+            if i == 0:
+                outDict[host[0]] = []
+            else:
+                outDict[host[0]].append(host[i])
+    return outDict
 
 def FilterDates(dateIn,operator,fileLines):
     '''three operators, an 8 digit number in the YEARMONTHDAY formart, a string with either "before", or "after", and the filelines list. Returned is the file list with only relivant dates'''
@@ -257,8 +272,8 @@ for filename in args.filenames:
         filelines = FilterDates(args.after_date,"after",filelines)
     #set up data structures to be used later.
     asn_list = []
-    ipv4List = []
-    ipv6List = []
+    ipList = {}
+    #ipv6List = {}
     ipv4BlockList = []
     ipv6BlockList = []
     class file_meta:
@@ -283,9 +298,9 @@ for filename in args.filenames:
     #Now we get into IPBlocks, or IP Networks, we use nmap to transform these into invidual IPs.
     if args.nmap == True:
         if len(ipv4BlockList) >= 1:
-            ipv4List += nmapScanHosts(ipv4BlockList,args.nmap_opts)
+            ipList.update(nmapScanHosts(ipv4BlockList,args.nmap_opts))
         if len(ipv6BlockList) >= 1:
-            ipv6List += nmapScanHosts(ipv6BlockList,args.nmap_opts+" -6")
+            ipList.update(nmapScanHosts(ipv6BlockList,args.nmap_opts+" -6"))
 
     ### Print and output, Take processed data and return it ###
     ## Header data. Real easy, just re-formated to be human readable, nothing more.
@@ -310,6 +325,7 @@ for filename in args.filenames:
 
     ##ASN handling
     useasn = args.asn == True or args.all == True
+
     if useasn == True and args.asn2ipblocks != True:
         print_AS_Numbers(asn_list,None)
     elif useasn == True and args.asn2ipblocks == True:
