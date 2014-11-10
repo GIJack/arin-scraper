@@ -113,19 +113,27 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
     #version is either ASN, IPv4, or IPv6. If the version is ASN, don't print the header, tread this as expansion from the previous level.
     #ipBlockList format is the same as the files, [1] being the country code, [3] being the ipblock name, or alternatively a list of IPblocknames with the ASN being entry [0](make this a dictionary?)
     if ver == "ASN":
-        if type(ipBlockList[3]) == list:
-            print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3][0])
-            if len(ipBlockList[3]) > 1:
-                print("	  \\")
-                for i in range(len(ipBlockList[3])):
-                    if i == 0:
-                        continue
-                    else:
-                        print("	  |-"+ipBlockList[3][i])
-                        if print_opts == "expand":
-                            print_ip_list(ipList[ipBlockList[3][i]],"expand")
-        elif type(ipBlockList[3]) == str:
-            print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3])
+        #if type(ipBlockList[3]) == list:
+        #    print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3][0])
+        #    if len(ipBlockList[3]) > 1:
+        #        print("	  \\")
+        #        for i in range(len(ipBlockList[3])):
+        #            if i == 0:
+        #                continue
+        #            else:
+        #                print("	  |-"+ipBlockList[3][i])
+        #                if print_opts == "expand":
+        #                    print_ip_list(ipList[ipBlockList[3][i]],"expand")
+        #elif type(ipBlockList[3]) == str:
+        #    print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3])
+        print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3])
+        if len(asn_ipBlock_dict[ipBlockList[3]]) > 0:
+            print("	  \\")
+        for Block in asn_ipBlock_dict[ipBlockList[3]]:
+            print("	  |-"+Block)
+            if print_opts == "expand":
+                print_ip_list(ipList[Block],"expand")
+        
     #we assume that the program was called with either -4 or -6, and is printing file data from ipv4 or ipv6 blocks, and this function is called to do that, and passed either "ipv4" or "ipv6" as the version.
     else:
         print(colors.bold,colors.fg.yellow,"	",ver,"Address blocks",colors.reset)
@@ -173,16 +181,17 @@ def print_AS_Numbers(asnlist,print_opts):
 def ASN_list_ip_blocks(asnlist,mirror):
     '''Calls ASNWhois to get a list of ipblocks from ARIN databases, two opts, a list of ASNs, and whois mirror, None for defaults'''
     from asnwhois import ASNWhois
-    outList = []
+    #outList = []
     outDict = {}
     for asn in asnlist:
         target = "AS" + asn[3]
-        oldasn = asn[3]
+        #oldasn = asn[3]
         ipBlocks = ASNWhois.get_ipblocks(target, mirror)
-        asn[3].insert(0, oldasn)
-        outDict[asn[3]
-        outList.append(asn)
-    return outList
+        #asn[3].insert(0, oldasn)
+        outDict[asn[3]] = ipBlocks
+        #outList.append(asn)
+    #return outList
+    return outDict
 
 def nmapScanHosts(targetList,opts):
     '''Takes an input of a list of targets(see nmap help), and raw command line options for nmap, and
@@ -217,7 +226,7 @@ def nmapScanHosts(targetList,opts):
                 outDict[host[0]] = []
             else:
                 outDict[host[0]].append(host[i])
-    return outDict
+    return [outDict]
 
 def FilterDates(dateIn,operator,fileLines):
     '''three operators, an 8 digit number in the YEARMONTHDAY formart, a string with either "before", or "after", and the filelines list. Returned is the file list with only relivant dates'''
@@ -282,7 +291,7 @@ for filename in args.filenames:
     #set up data structures to be used later.
     asn_list = []
     ipList = {}
-    #ipv6List = {}
+    asn_ipBlock_dict = {}
     ipv4BlockList = []
     ipv6BlockList = []
     class file_meta:
@@ -303,7 +312,7 @@ for filename in args.filenames:
     ## Transforms. Now we start to use external programs to proccess/transform data into what we want.
     #Start with the largest formation, the Autonomous System Number, use whois to get IPblocks. As of yet, we can't seem to find IPv6 data off ASN lookups, or differeniate. That will change eventually
     if args.asn2ipblocks == True and len(asn_list) > 1:
-        ipv4BlockList += ASN_list_ip_blocks(asn_list,args.whois_server)
+        asn_ipBlock_dict.update(ASN_list_ip_blocks(asn_list,args.whois_server))
     #Now we get into IPBlocks, or IP Networks, we use nmap to transform these into invidual IPs.
     if args.nmap == True:
         if len(ipv4BlockList) >= 1:
