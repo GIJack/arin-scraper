@@ -199,14 +199,12 @@ def nmapScanHosts(targetList,opts):
     scans all targets in targetList, and returns dictionary with, the subnet as a key, and a list of hosts as the value
     the options of -T5 -sn --max-retries 5 are default'''
     scanTargets = []
-    for line in targetList:
-           if line[2] == "asn":
-               for i in range(len(line[3])):
-                   if i == 0:
-                       continue
-                   scanTargets.append(line[3][i])
-           else:
-               scanTargets.append(line[3]+line[4])
+    if targetList[0] == "asn":
+        targetList.remove("asn")
+        scanTargets = targetList
+    else:
+        for line in targetList:
+            scanTargets.append(line[3]+line[4])
     import nmap
     opts = str(opts)
     scanner = nmap.PortScanner()
@@ -227,7 +225,7 @@ def nmapScanHosts(targetList,opts):
                 outDict[host[0]] = []
             else:
                 outDict[host[0]].append(host[i])
-    return [outDict]
+    return outDict
 
 def FilterDates(dateIn,operator,fileLines):
     '''three operators, an 8 digit number in the YEARMONTHDAY formart, a string with either "before", or "after", and the filelines list. Returned is the file list with only relivant dates'''
@@ -320,6 +318,8 @@ for filename in args.filenames:
             ipList.update(nmapScanHosts(ipv4BlockList,args.nmap_opts))
         if len(ipv6BlockList) >= 1:
             ipList.update(nmapScanHosts(ipv6BlockList,args.nmap_opts+" -6"))
+        for asn in asn_ipBlock_dict:
+            ipList.update(nmapScanHosts(["asn"] + asn_ipBlock_dict[asn],args.nmap_opts))
 
     ### Print and output, Take processed data and return it ###
     ## Header data. Real easy, just re-formated to be human readable, nothing more.
