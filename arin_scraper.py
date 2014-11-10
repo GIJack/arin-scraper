@@ -111,7 +111,7 @@ def list_ip_blocks(filelines,ver):
 def print_ip_block_list(ipBlockList,ver,print_opts):
     '''Prints IPBlocks, expands using tree structure if need be.'''
     #version is either ASN, IPv4, or IPv6. If the version is ASN, don't print the header, tread this as expansion from the previous level.
-    #ipBlockList format is the same as the files, [1] being the country code, [3] being the ipblock name, or alternatively a list of IPblocknames with the ASN being entry [0](make this a dictionary?)
+    #ipBlockList format is the same as the files, [1] being the country code, [3] being the ipblock name.
     if ver == "ASN":
         #if type(ipBlockList[3]) == list:
         #    print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3][0])
@@ -126,6 +126,7 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
         #                    print_ip_list(ipList[ipBlockList[3][i]],"expand")
         #elif type(ipBlockList[3]) == str:
         #    print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3])
+        #new code, all sub-data types are now in cross refrenced dictionaries instead of nested lists.
         print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3])
         if len(asn_ipBlock_dict[ipBlockList[3]]) > 0:
             print("	  \\")
@@ -148,7 +149,7 @@ def print_ip_list(ipList,print_opts):
     '''prints IPs from an nmap scan, in the tree structure '''
     spacing="		"
     #if print_opts == "expand":
-    #    spacing += "	"
+    #    spacing = "	|	"
     if len(ipList) > 0:
         print(spacing+"\\")
         for address in ipList:
