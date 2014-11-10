@@ -90,16 +90,20 @@ def list_ip_blocks(filelines,ver):
     outList= []
     for cc in countries:
         for line in filelines:
-            line.strip("\n")
+            #for every line in the file, use split to put the fields in variables of a class
+            #line.strip("\n")
             line = line.split(d)
+            #check if we have valid data. We should have 7 fields. If not, skip the line
             if len(line) < 7:
                 continue
+            # line is a list, with the following fields from 0 to 6. No, putting them into a class results in a 14 times increase in proccessing time
+            # delegate, country, ip_ver, block, block size, timestamp, status
             if ver == "ipv4":
-                if line[1] == cc and line[6].strip() == "assigned" and line[2] == ver:
+                if line[1] == cc and line[6].strip() == "assigned" and line[2] == "ipv4":
                     line[4] = cidr_convert(line[4])
                     outList.append(line)
             elif ver == "ipv6":
-                if line[1] == cc and line[6].strip() == "assigned" and line[2] == ver:
+                if line[1] == cc and line[6].strip() == "assigned" and line[2] == "ipv6":
                     line[4] = "/"+line[4]
                     outList.append(line)
     return outList
