@@ -77,6 +77,7 @@ def strip_comments(inList):
     return fileLines
 
 def print_metadata():
+    import os.path
     '''Prints ARIN status file data in human readable format. '''
     print(colors.fg.lightgreen,colors.bold,"File Name: ",colors.reset,os.path.abspath(file_meta.filename))
     print(colors.fg.yellow,colors.bold,"File Format Version:",colors.reset,file_meta.version,colors.bold,colors.fg.yellow,"			Serial Number:",colors.reset,file_meta.serial)
@@ -263,23 +264,32 @@ elif args.marks_list == True:
 countries = sorted(countries)
 
 #We do this one file at a time. This program is file oriented, as in transforming data in an ARIN status file.
-import sys, os.path
+import sys
+#import os.path
 for filename in args.filenames:
     #open target file and dump lines into a list
     #check to see if the file exists, if not exit gracefully with error messaage
-    if os.path.isfile(filename) == False:
-        print(filename + ": No such file")
-        sys.exit(1)
-    #open the file and dump its lines into a list.
-    infile = open(filename,"r")
-    filelines = infile.readlines()
-    infile.close()
+    #if os.path.isfile(filename) == False:
+    #    print(filename + ": No such file")
+    #    sys.exit(1)
+    #open the file and dump its lines into a list. better exception handling
+    try:
+        infile = open(filename,"r")
+        filelines = infile.readlines()
+        infile.close()
+    except:
+        print(filename + ": Cannot Read File")
+        continue
     ### This section performs filtering on file lines before analyzation ###
     #Strip out comments
     filelines = strip_comments(filelines)
     #now check to see if we have valid data, if not, skip this file.
     meta_list = filelines[0].split(d)
-    if len(meta_list) != 7:
+    try:
+        class file_meta:
+            filename = filename
+            version, name, serial, total, startdate, enddate, offset = meta_list
+    except:
         print(filename,"is not an ARIN statistics file!")
         continue
     #Now filter dates as set in args
@@ -293,9 +303,7 @@ for filename in args.filenames:
     asn_ipBlock_dict = {}
     ipv4BlockList = []
     ipv6BlockList = []
-    class file_meta:
-        filename = filename
-        version, name, serial, total, startdate, enddate, offset = meta_list
+
 
     ### gather and proccess data into lists###
     ## Start with basic information gathering from the file
