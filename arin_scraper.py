@@ -110,24 +110,26 @@ def list_ip_blocks(filelines,ver):
 
 def print_ip_block_list(ipBlockList,ver,print_opts):
     '''Prints IPBlocks, expands using tree structure if need be.'''
-    if ver != "ASN":
-        print(colors.bold,colors.fg.yellow,"	",ver,"Address blocks",colors.reset)
-        print(colors.bold,"CC	IPBlock	 	CIDR",colors.reset)
+    #version is either ASN, IPv4, or IPv6. If the version is ASN, don't print the header, tread this as expansion from the previous level.
+    #ipBlockList format is the same as the files, [1] being the country code, [3] being the ipblock name, or alternatively a list of IPblocknames with the ASN being entry [0](make this a dictionary?)
     if ver == "ASN":
         if type(ipBlockList[3]) == list:
             print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3][0])
             if len(ipBlockList[3]) > 1:
+                print("	  \\")
                 for i in range(len(ipBlockList[3])):
                     if i == 0:
-                        print("	  \\")
+                        continue
                     else:
                         print("	  |-"+ipBlockList[3][i])
                         if print_opts == "expand":
                             print_ip_list(ipList[ipBlockList[3][i]],"expand")
         elif type(ipBlockList[3]) == str:
             print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3])
-
+    #we assume that the program was called with either -4 or -6, and is printing file data from ipv4 or ipv6 blocks, and this function is called to do that, and passed either "ipv4" or "ipv6" as the version.
     else:
+        print(colors.bold,colors.fg.yellow,"	",ver,"Address blocks",colors.reset)
+        print(colors.bold,"CC	IPBlock	 	CIDR",colors.reset)
         for i in range(len(ipBlockList)):
             line = ipBlockList[i]
             print(colors.fg.orange,line[1],colors.reset+"	"+colors.bold+colors.fg.cyan+line[3]+colors.reset+"	"+line[4])
@@ -135,7 +137,7 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
                 print_ip_list(ipList[line[3]+line[4]],None)
 
 def print_ip_list(ipList,print_opts):
-    '''prints IPs gotten from nmap in a tree structure '''
+    '''prints IPs from an nmap scan, in the tree structure '''
     spacing="		"
     #if print_opts == "expand":
     #    spacing += "	"
@@ -172,11 +174,13 @@ def ASN_list_ip_blocks(asnlist,mirror):
     '''Calls ASNWhois to get a list of ipblocks from ARIN databases, two opts, a list of ASNs, and whois mirror, None for defaults'''
     from asnwhois import ASNWhois
     outList = []
+    outDict = {}
     for asn in asnlist:
         target = "AS" + asn[3]
         oldasn = asn[3]
-        asn[3] = ASNWhois.get_ipblocks(target,mirror)
-        asn[3].insert(0,oldasn)
+        ipBlocks = ASNWhois.get_ipblocks(target, mirror)
+        asn[3].insert(0, oldasn)
+        outDict[asn[3]
         outList.append(asn)
     return outList
 
@@ -246,6 +250,9 @@ elif args.iso_list == True:
     countries = allCountries
 elif args.marks_list == True:
     countries = marksCountries
+
+#make sure the country list is sorted
+countries = sorted(countries)
 
 #We do this one file at a time. This program is file oriented, as in transforming data in an ARIN status file.
 import sys, os.path
