@@ -57,17 +57,15 @@ def cidr_convert(total):
 
 def date_convert(indate):
     '''When given a single 8 digit number for YEARMONTHDAY, converts into a standard date'''
-    if indate == "":
-       return "Unknown		"
-    import datetime
-    indate  = str(indate)
-    year    = int(indate[:4])
-    month   = int(indate[4:6])
-    day     = int(indate[6:8])
-    if indate == "00000000":
-        return "Unknown		"
-    else:
+    try:
+        indate  = str(indate)
+        year    = int(indate[:4])
+        month   = int(indate[4:6])
+        day     = int(indate[6:8])
+        import datetime
         return datetime.date(year,month,day).strftime("%A %d. %B %Y")
+    except:
+        return "Unknown		"
 
 def strip_comments(inList):
     '''Strips out lines that start with # from a list that contains a dump of a file. please note it does not work with lines that have comments at the end.'''
