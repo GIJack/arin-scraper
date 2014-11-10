@@ -272,7 +272,7 @@ for filename in args.filenames:
     #if os.path.isfile(filename) == False:
     #    print(filename + ": No such file")
     #    sys.exit(1)
-    #open the file and dump its lines into a list. better exception handling
+    #open the file and dump its lines into a list. If it cannot read the file, throws an error, now with better exception handling
     try:
         infile = open(filename,"r")
         filelines = infile.readlines()
@@ -283,12 +283,11 @@ for filename in args.filenames:
     ### This section performs filtering on file lines before analyzation ###
     #Strip out comments
     filelines = strip_comments(filelines)
-    #now check to see if we have valid data, if not, skip this file.
-    meta_list = filelines[0].split(d)
+    #now check to see if we have valid data by entering it in a class, if not, skip the file
     try:
         class file_meta:
             filename = filename
-            version, name, serial, total, startdate, enddate, offset = meta_list
+            version, name, serial, total, startdate, enddate, offset = filelines[0].split(d)
     except:
         print(filename,"is not an ARIN statistics file!")
         continue
@@ -303,7 +302,6 @@ for filename in args.filenames:
     asn_ipBlock_dict = {}
     ipv4BlockList = []
     ipv6BlockList = []
-
 
     ### gather and proccess data into lists###
     ## Start with basic information gathering from the file
