@@ -114,19 +114,6 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
     #version is either ASN, IPv4, or IPv6. If the version is ASN, don't print the header, tread this as expansion from the previous level.
     #ipBlockList format is the same as the files, [1] being the country code, [3] being the ipblock name.
     if ver == "ASN":
-        #if type(ipBlockList[3]) == list:
-        #    print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3][0])
-        #    if len(ipBlockList[3]) > 1:
-        #        print("	  \\")
-        #        for i in range(len(ipBlockList[3])):
-        #            if i == 0:
-        #                continue
-        #            else:
-        #                print("	  |-"+ipBlockList[3][i])
-        #                if print_opts == "expand":
-        #                    print_ip_list(ipList[ipBlockList[3][i]],"expand")
-        #elif type(ipBlockList[3]) == str:
-        #    print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3])
         #new code, all sub-data types are now in cross refrenced dictionaries instead of nested lists.
         print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3])
         if len(asn_ipBlock_dict[ipBlockList[3]]) > 0:
@@ -183,16 +170,11 @@ def print_AS_Numbers(asnlist,print_opts):
 def ASN_list_ip_blocks(asnlist,mirror):
     '''Calls ASNWhois to get a list of ipblocks from ARIN databases, two opts, a list of ASNs, and whois mirror, None for defaults'''
     from asnwhois import ASNWhois
-    #outList = []
     outDict = {}
     for asn in asnlist:
         target = "AS" + asn[3]
-        #oldasn = asn[3]
         ipBlocks = ASNWhois.get_ipblocks(target, mirror)
-        #asn[3].insert(0, oldasn)
         outDict[asn[3]] = ipBlocks
-        #outList.append(asn)
-    #return outList
     return outDict
 
 def nmapScanHosts(targetList,opts):
@@ -210,7 +192,6 @@ def nmapScanHosts(targetList,opts):
     opts = str(opts)
     scanner = nmap.PortScanner()
     validHosts = []
-    #scanner.scan(hosts=' '.join(scanTargets), ports=None, arguments=opts)
     for target in scanTargets:
         targetHosts = []
         scanner.scan(hosts=target, ports=None, arguments=opts)
@@ -236,9 +217,9 @@ def FilterDates(dateIn,operator,fileLines):
         line = line.split(d)
         if len(line) < 7:
             continue
-        if line[5] == "00000000" or line[5] == "":
+        elif line[5] == "00000000" or line[5] == "":
             continue
-        elif operator == "before":
+        if operator == "before":
             if int(line[5]) < dateIn:
                 filteredLines.append(d.join(line))
         elif operator == "after":
@@ -267,11 +248,6 @@ countries = sorted(countries)
 import sys
 #import os.path
 for filename in args.filenames:
-    #open target file and dump lines into a list
-    #check to see if the file exists, if not exit gracefully with error messaage
-    #if os.path.isfile(filename) == False:
-    #    print(filename + ": No such file")
-    #    sys.exit(1)
     #open the file and dump its lines into a list. If it cannot read the file, throws an error, now with better exception handling
     try:
         infile = open(filename,"r")
