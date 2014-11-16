@@ -36,7 +36,7 @@ class ASNWhois:
         return outDict
 
     class value:
-        '''Run get_ASN_meta_data() to populate this sub-class'''
+        '''Run ASN_meta_data() to populate this sub-class'''
         asn=""
         ipblocks = []
 
