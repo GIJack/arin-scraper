@@ -21,7 +21,7 @@ usage: arin_scraper.py [-h] [-a] [-i] [-4] [-6] [-n] [-b BEFORE_DATE]
                        filenames [filenames ...]
 
 This app parses data about ASNs and IP address ranges from ARIN Statistics
-Files, and look for hosts based on system name ARIN's Status files can be
+Files, and looks for hosts based on system name ARIN's Status files can be
 found on their FTP server here: ftp://ftp.arin.net/pub/stats/
 
 positional arguments:
