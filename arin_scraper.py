@@ -213,7 +213,6 @@ def FilterDates(dateIn,operator,fileLines):
     '''Returns fileLines filtered for only lines that match the date. Operator is either of the strings "before" or "after"'''
     filteredLines = []
     for line in fileLines:
-        line.strip("\n")
         #the line is a raw read from the file that uses "|" delimeted fields. split this into a list, so we can access each field from a list index. "d" is defined at the top of the file as "|"
         line = line.split(d)
         #If there is less than seven fields, then the data is invalid. Skip this line.
@@ -236,7 +235,6 @@ def FilterCountryCodes(ccList,fileLines):
     outList = []
     for line in fileLines:
         #format the line. strip the return character, and then split the fields of the line using field delimeters(d is "|")
-        line.strip("\n")
         line = line.split(d)
         #the second entry on the line [1] is the country code. If the country code matches, put it in the list
         try:
