@@ -89,22 +89,24 @@ def list_ip_blocks(filelines,ver):
     '''print all ip address blocks, two variables, first a list with all the lines of the current file
     second, the version of the IP protocol, either IPv4 or IPv6 '''
     outList= []
-    for cc in countries:
-        for line in filelines:
-            #for every line in the file, use split to put the fields in variables of a class
-            #line.strip("\n")
-            line = line.split(d)
-            #check if we have valid data. We should have 7 fields. If not, skip the line
-            if len(line) < 7:
-                continue
-            # line is a list, with the following fields from 0 to 6. No, putting them into a class results in a 14 times increase in proccessing time
-            # delegate, country, ip_ver, block, block size, timestamp, status
-            if ver == "ipv4":
-                if line[1] == cc and line[6].strip() == "assigned" and line[2] == "ipv4":
-                    line[4] = cidr_convert(line[4])
-                    outList.append(line)
-            elif ver == "ipv6":
-                if line[1] == cc and line[6].strip() == "assigned" and line[2] == "ipv6":
+    #for cc in countries:
+    for line in filelines:
+        #for every line in the file, use split to put the fields in variables of a class
+        #line.strip("\n")
+        line = line.split(d)
+        #check if we have valid data. We should have 7 fields. If not, skip the line
+        if len(line) < 7:
+            continue
+        # line is a list, with the following fields from 0 to 6. No, putting them into a class results in a 14 times increase in proccessing time
+        # delegate, country, ip_ver, block, block size, timestamp, status
+        if ver == "ipv4":
+            #if line[1] == cc and line[6].strip() == "assigned" and line[2] == "ipv4":
+            if line[6].strip() == "assigned" and line[2] == "ipv4":
+                line[4] = cidr_convert(line[4])
+                outList.append(line)
+        elif ver == "ipv6":
+            #if line[1] == cc and line[6].strip() == "assigned" and line[2] == "ipv6":
+            if line[6].strip() == "assigned" and line[2] == "ipv6":
                     line[4] = "/"+line[4]
                     outList.append(line)
     return outList
@@ -146,13 +148,14 @@ def print_ip_list(ipList,print_opts):
 def list_AS_numbers(filelines):
     '''returns the lines of the list that are ASN entries, takes the filelist as unput'''
     outList = []
-    for cc in countries:
-        for line in filelines:
-            line = line.split(d)
-            if len(line) < 7:
-                continue
-            elif line[1] == cc and line[2] == "asn":
-                outList.append(line)
+    #for cc in countries:
+    for line in filelines:
+        line = line.split(d)
+        if len(line) < 7:
+            continue
+        #elif line[1] == cc and line[2] == "asn":
+        elif line[2] == "asn":
+            outList.append(line)
     return outList
 
 def print_AS_Numbers(asnlist,print_opts):
@@ -214,20 +217,20 @@ def FilterDates(dateIn,operator,fileLines):
     filteredLines = []
     for line in fileLines:
         #the line is a raw read from the file that uses "|" delimeted fields. split this into a list, so we can access each field from a list index. "d" is defined at the top of the file as "|"
-        line = line.split(d)
+        testline = line.split(d)
         #If there is less than seven fields, then the data is invalid. Skip this line.
         if len(line) < 7:
             continue
         #the sixth [5] field of an entry is the date stamp. Sometimes there is no datestamp, or the datestamp is blank. If so, ignore(mabey default "00000000", to before???)
         elif line[5] == "00000000" or line[5] == "":
             continue
-        #Now we c
+        #Now we can check if the dates match. two sub functions, "before" and "after"
         if operator == "before":
-            if int(line[5]) < dateIn:
-                filteredLines.append(d.join(line))
+            if int(testline[5]) < dateIn:
+                filteredLines.append(line)
         elif operator == "after":
-            if int(line[5]) > dateIn:
-                filteredLines.append(d.join(line))
+            if int(testline[5]) > dateIn:
+                filteredLines.append(line)
     return filteredLines
 
 def FilterCountryCodes(ccList,fileLines):
@@ -235,10 +238,10 @@ def FilterCountryCodes(ccList,fileLines):
     outList = []
     for line in fileLines:
         #format the line. strip the return character, and then split the fields of the line using field delimeters(d is "|")
-        line = line.split(d)
+        testline = line.split(d)
         #the second entry on the line [1] is the country code. If the country code matches, put it in the list
         try:
-            if line[1] in ccList:
+            if testline[1] in ccList:
                 outList.append(line)
         except:
             continue
@@ -290,6 +293,8 @@ for filename in args.filenames:
         filelines = FilterDates(args.before_date,"before",filelines)
     if args.after_date != None:
         filelines = FilterDates(args.after_date,"after",filelines)
+
+    filelines = sorted(FilterCountryCodes(countries,filelines))
     #set up data structures to be used later.
     asn_list = []
     ipList = {}
