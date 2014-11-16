@@ -210,15 +210,19 @@ def nmapScanHosts(targetList,opts):
     return outDict
 
 def FilterDates(dateIn,operator,fileLines):
-    '''three operators, an 8 digit number in the YEARMONTHDAY formart, a string with either "before", or "after", and the filelines list. Returned is the file list with only relivant dates'''
+    '''Returns fileLines filtered for only lines that match the date. Operator is either of the strings "before" or "after"'''
     filteredLines = []
     for line in fileLines:
         line.strip("\n")
+        #the line is a raw read from the file that uses "|" delimeted fields. split this into a list, so we can access each field from a list index. "d" is defined at the top of the file as "|"
         line = line.split(d)
+        #If there is less than seven fields, then the data is invalid. Skip this line.
         if len(line) < 7:
             continue
+        #the sixth [5] field of an entry is the date stamp. Sometimes there is no datestamp, or the datestamp is blank. If so, ignore(mabey default "00000000", to before???)
         elif line[5] == "00000000" or line[5] == "":
             continue
+        #Now we c
         if operator == "before":
             if int(line[5]) < dateIn:
                 filteredLines.append(d.join(line))
@@ -226,6 +230,22 @@ def FilterDates(dateIn,operator,fileLines):
             if int(line[5]) > dateIn:
                 filteredLines.append(d.join(line))
     return filteredLines
+
+def FilterCountryCodes(ccList,fileLines):
+    '''Returns only filelines that match given country codes'''
+    outList = []
+    for line in fileLines:
+        #format the line. strip the return character, and then split the fields of the line using field delimeters(d is "|")
+        line.strip("\n")
+        line = line.split(d)
+        #the second entry on the line [1] is the country code. If the country code matches, put it in the list
+        try:
+            if line[1] in ccList:
+                outList.append(line)
+        except:
+            continue
+    return outList
+
 #----Below here this is run in order, check to see if each test is called for, and run if applicable ----#
 ##proccess the country list
 #default is using mark's list of countries.
