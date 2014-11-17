@@ -18,8 +18,10 @@ from bigDict import *
 import argparse
 
 parser = argparse.ArgumentParser(description='''This app parses data about ASNs and IP address ranges from ARIN Statistics Files, and look for hosts based on system name ARIN's Status files can be found on their FTP server here:
-ftp://ftp.arin.net/pub/stats/''')
+ftp://ftp.arin.net/pub/stats/''',
+add_help=False)
 parser.add_argument("filenames",nargs='+',help="files to proccess")
+parser.add_argument("-?", "--help", help="Show This Help Message", action="help")
 
 data_type = parser.add_argument_group("Data Types","return/proccess lines matching these types")
 data_type.add_argument("-a","--all",help="All Information(equiv of -i46n)",action="store_true")
@@ -35,9 +37,9 @@ filter_type.add_argument("-r","--regex",help="Regular Expression. Only Use Entri
 
 proc_opts = parser.add_argument_group("Proccessing","Use NMAP and/or whois to expand IP Address Ranges and ASNumbers into more IP ranges and IP addresses respectively.")
 proc_opts.add_argument("-N","--nmap",help="Scan Matching IP Address Ranges with NMAP",action="store_true")
-proc_opts.add_argument("-O","--nmap-opts",help="Command line options to use with NMAP, defaults are:'-T5 -sn --max-retries 5'",type=str,default='-T5 -sn --max-retries 5')
+proc_opts.add_argument("-O","--nmap-opts",help="NMAP commandline options to use with -N, defaults are:'-T5 -sn --max-retries 5'",type=str,default='-T5 -sn --max-retries 5')
 proc_opts.add_argument("-w","--asn2ipblocks",help="Use 'whois' To Find IPaddress Blocks Associated With ASNumber",action="store_true")
-proc_opts.add_argument("-s","--whois-server",help="ARIN Whois Server To User",type=str)
+proc_opts.add_argument("-h","--whois-server",help="WHOIS server to use with -w",type=str)
 
 dict_group = parser.add_argument_group("Dictionary Options","Specify list of country codes to use")
 use_dict = dict_group.add_mutually_exclusive_group()

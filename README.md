@@ -7,6 +7,8 @@ Please note this is still "pre-alpha", functionaily, formats, switchs, and data 
 
 Depenencies:
 POSIX-enviroment(linux, UNIX, OSX, etc...), won't work on windows.
+whois
+iputils
 python3
 python3-nmap
 python3-argparse(for old versions of python before 3.2)
@@ -21,7 +23,7 @@ usage: arin_scraper.py [-h] [-a] [-i] [-4] [-6] [-n] [-b BEFORE_DATE]
                        filenames [filenames ...]
 
 This app parses data about ASNs and IP address ranges from ARIN Statistics
-Files, and looks for hosts based on system name ARIN's Status files can be
+Files, and look for hosts based on system name ARIN's Status files can be
 found on their FTP server here: ftp://ftp.arin.net/pub/stats/
 
 positional arguments:
