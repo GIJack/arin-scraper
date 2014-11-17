@@ -72,7 +72,8 @@ def strip_comments(inList):
     fileLines = []
     for line in inList:
         li=line.strip()
-        if not li.startswith("#"):
+        li=line.strip('\n')
+        if not li.startswith("#") and not li.startswith("%") and li != "":
             fileLines.append(line)
     return fileLines
 
