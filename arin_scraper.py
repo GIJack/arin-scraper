@@ -122,7 +122,7 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
     #ipBlockList format is the same as the files, [1] being the country code, [3] being the ipblock name.
     if ver == "ASN":
         #new code, all sub-data types are now in cross refrenced dictionaries instead of nested lists.
-        print(colors.fg.orange,ipBlockList[1],colors.reset+"	"+colors.bold+colors.fg.cyan+"AS"+ipBlockList[3]+colors.reset)
+        print(colors.fg.lightgreen,ipBlockList[1],colors.reset+"	"+colors.bold+colors.fg.cyan+"AS"+ipBlockList[3]+colors.reset)
         if len(asn_ipBlock_dict[ipBlockList[3]]) > 0:
             print("	  \\")
         for Block in asn_ipBlock_dict[ipBlockList[3]]:
@@ -136,7 +136,7 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
         print(colors.bold,"CC	IPBlock	 	CIDR",colors.reset)
         for i in range(len(ipBlockList)):
             line = ipBlockList[i]
-            print(colors.fg.orange,line[1],colors.reset+"	"+colors.bold+colors.fg.cyan+line[3]+colors.reset+"	"+line[4])
+            print(colors.fg.lightgreen,line[1],colors.reset+"	"+colors.bold+colors.fg.cyan+line[3]+colors.reset+"	"+line[4])
             if print_opts == "expand":
                 print_ip_list(ipList[line[3]+line[4]],None)
 
@@ -173,7 +173,7 @@ def print_AS_Numbers(asnlist,print_opts):
         elif "expand twice" == print_opts:
             print_ip_block_list(asn,"ASN","expand")
         else:
-            print(colors.fg.orange,asn[1],colors.reset+"	"+colors.bold+colors.fg.cyan+asn[3]+colors.reset)
+            print(colors.fg.lightgreen,asn[1],colors.reset+"	"+colors.bold+colors.fg.cyan+"AS"+asn[3]+colors.reset)
 
 def ASN_list_ip_blocks(asnlist,mirror):
     '''Calls ASNWhois to get a list of ipblocks from ARIN databases, two opts, a list of ASNs, and whois mirror, None for defaults'''
