@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-#GPLv2 jack @ nyi
-#part of ARIN status scrapper.
+# bigDict.py - contains large static lookups elements for arin_scraper.py. Country lists, colors class, countryname to abbreviation dicitionary, and now dictionary for provences/states of countries.
+# Library File for arin_scraper.py
+# licensed under the GPLv2: https://www.gnu.org/licenses/gpl-2.0.html
+
 '''Big Dictionary File, for extremely long lists, dictionaries, and classes to keep them out of the mainfile to reduce clutter. Mostly large amounts of static data in lookup tables'''
 
 #Mark's list of countries he needs information from, see arin_scraper.py, comments at top
@@ -14,12 +16,14 @@ ccLookupTable = {'Eritrea': 'ER', 'Bouvet Island': 'BV', 'Georgia': 'GE', 'Nicar
 'United States Minor Outlying Islands': 'UM', 'Virgin Islands, U.S.': 'VI', 'Uzbekistan': 'UZ', 'Guadeloupe': 'GP', 'Lithuania': 'LT', 'Austria': 'AT', 'New Caledonia': 'NC', 'Guatemala': 'GT', 'Andorra': 'AD', 'Gambia': 'GM', 'Slovakia': 'SK', 'Cambodia': 'KH', 'Saint Vincent and the Grenadines': 'VC', 'Belgium': 'BE', 'Bangladesh': 'BD', 'Slovenia': 'SI', 'Honduras': 'HN', 'Mauritania': 'MR', 'Denmark': 'DK', 'Switzerland': 'CH', 'Armenia': 'AM', 'Nauru': 'NR', 'Poland': 'PL', 'Bermuda': 'BM', 'Thailand': 'TH', 'Sint Maarten Dutch part': 'SX', 'Comoros': 'KM', 'Gabon': 'GA', 'Cabo Verde': 'CV', 'Ireland': 'IE', 'Falkland Islands Malvinas': 'FK', 'Namibia': 'NA', 'Iraq': 'IQ', 'Hong Kong': 'HK', 'Seychelles': 'SC', 'Mongolia': 'MN', 'San Marino': 'SM', 'Palau': 'PW', 'Estonia': 'EE', 'Algeria': 'DZ', 'Fiji': 'FJ', 'Kiribati': 'KI', 'Belize': 'BZ', 'Bhutan': 'BT', 'Saint Lucia': 'LC', 'Kenya': 'KE', 'Uruguay': 'UY', 'Belarus': 'BY', 'Greenland': 'GL', 'Iran, Islamic Republic of': 'IR', 'Bonaire, Sint Eustatius and Saba': 'BQ', 'Angola': 'AO', 'Mozambique': 'MZ', 'Maldives': 'MV', 'Colombia': 'CO', 'British Indian Ocean Territory': 'IO', 'Italy': 'IT', 'Guyana': 'GY', 'Côte dIvoire': 'CI', 'France': 'FR', 'Ghana': 'GH', 'Yemen': 'YE', 'Saudi Arabia': 'SA', 'Haiti': 'HT', 'Dominica': 'DM', 'Oman': 'OM', 'Myanmar': 'MM', 'Liechtenstein': 'LI', 'Tajikistan': 'TJ', 'Isle of Man': 'IM', 'Jersey': 'JE', 'Libya': 'LY', 'Congo, the Democratic Republic of the': 'CD', 'Macedonia, the former Yugoslav Republic of': 'MK', 'Argentina': 'AR', 'Cameroon': 'CM', 'Brazil': 'BR', 'Senegal': 'SN', 'Djibouti': 'DJ', 'China': 'CN', 'Albania': 'AL', 'Burundi': 'BI', 'Sri Lanka': 'LK', 'Moldova, Republic of': 'MD', 'Niue': 'NU', 'Saint Helena, Ascension and Tristan da Cunha': 'SH', 'Gibraltar': 'GI', 'Western Sahara': 'EH', 'Sierra Leone': 'SL', 'Tunisia': 'TN', 'Luxembourg': 'LU', 'Mexico': 'MX', 'Iceland': 'IS', 'Mayotte': 'YT', 'Korea, Democratic Peoples Republic of': 'KP', 'Turkmenistan': 'TM', 'Guinea': 'GN', 'Kyrgyzstan': 'KG', 'Uganda': 'UG', 'Canada': 'CA', 'French Southern Territories': 'TF', 'India': 'IN', 'Bahrain': 'BH', 'Jamaica': 'JM', 'Guam': 'GU', 'Viet Nam': 'VN', 'Bolivia, Plurinational State of': 'BO', 'Somalia': 'SO', 'Zambia': 'ZM', 'Montserrat': 'MS', 
 'United Kingdom': 'GB', 'Ethiopia': 'ET', 'Russian Federation': 'RU', 'Korea, Republic of': 'KR', 'Tuvalu': 'TV', 'Palestine, State of': 'PS', 'El Salvador': 'SV', 'South Georgia and the South Sandwich Islands': 'GS', 'Micronesia, Federated States of': 'FM', 'Cyprus': 'CY', 'Netherlands': 'NL', 'Afghanistan': 'AF', 'Antigua and Barbuda': 'AG', 'Malta': 'MT', 'Nepal': 'NP', 'Saint Kitts and Nevis': 'KN', 'Malawi': 'MW', 'Trinidad and Tobago': 'TT', 'Saint Barthélemy': 'BL', 'Ukraine': 'UA', 'Rwanda': 'RW', 'Malaysia': 'MY', 'Lebanon': 'LB', 'Azerbaijan': 'AZ', 'Marshall Islands': 'MH', 'Norway': 'NO', 'Portugal': 'PT', 'Zimbabwe': 'ZW', 'Solomon Islands': 'SB', 'Peru': 'PE', 'Bosnia and Herzegovina': 'BA', 'Czech Republic': 'CZ', 'Paraguay': 'PY', 'Turks and Caicos Islands': 'TC', 'South Africa': 'ZA', 'Bahamas': 'BS', 'Benin': 'BJ'}
 
+provinceTable = {"US":['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY']}
+
 class colors:
     '''Colors class:
-    reset all colors with colors.reset
-    two subclasses fg for foreground and bg for background.
     use as colors.subclass.colorname.
     i.e. colors.fg.red or colors.bg.green
+    reset all colors with colors.reset
+    two subclasses fg for foreground and bg for background.
     also, the generic bold, disable, underline, reverse, strikethrough,
     and invisible work with the main class
     i.e. colors.bold'''

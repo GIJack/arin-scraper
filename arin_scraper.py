@@ -2,7 +2,8 @@
 # This script parses and proccess ARIN's textfiles from their FTP server.
 # Original use was to look for IPs in countries for Mark to use with FTW to test connectivity around the world. This is now evolving into a proper application
 # See https://my.nyi.net/tickets/view/143661
-# Written by jack barber @ nyi GPL v2
+# Written by GI_Jack
+# licensed under the GPLv2: https://www.gnu.org/licenses/gpl-2.0.html
 
 # see arin_scrape.py --help for usage
 # Status files are found here: ftp://ftp.arin.net/pub/stats/
@@ -47,6 +48,7 @@ use_dict.add_argument("-C","--cc",help="Country Codes: Use specified country cod
 use_dict.add_argument("-M","--marks-list",help="Use Mark's List of Countries"+colors.fg.lightcyan+ colors.bold+"(default)"+colors.reset,action="store_true")
 use_dict.add_argument("-S","--iso-list",help="Use List of Countries From ISO 3166-1(all of them)",action="store_true")
 args = parser.parse_args()
+
 def cidr_convert(total):
     '''Converts Total amount of IP addresses to coresponding cidr notation
        address block, takes a single number'''
@@ -250,6 +252,18 @@ def FilterCountryCodes(ccList,fileLines):
             continue
     return outList
 
+def FilterRegex(regex,fileLines):
+    '''performs a regular expression match against given file lines, return only those that match'''
+    #same as above
+    outList = []
+    for line in fileLines:
+        testline = line.split(d)
+        try:
+            if re.fulltetestline[3]
+        except:
+            continue
+     return outList
+
 #----Below here this is run in order, check to see if each test is called for, and run if applicable ----#
 ##proccess the country list
 #default is using mark's list of countries.
@@ -265,12 +279,11 @@ elif args.iso_list == True:
 elif args.marks_list == True:
     countries = marksCountries
 
-#make sure the country list is sorted
+#make sure the country list is sorted. completely eliminate the need for one country at a time for loops.
 countries = sorted(countries)
 
 #We do this one file at a time. This program is file oriented, as in transforming data in an ARIN status file.
-import sys
-#import os.path
+#import sys
 for filename in args.filenames:
     #open the file and dump its lines into a list. If it cannot read the file, throws an error, now with better exception handling
     try:
