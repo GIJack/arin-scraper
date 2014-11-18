@@ -34,7 +34,7 @@ data_type.add_argument("-n","--asn",help="Autonomous System Numbers(ASN)",action
 filter_type = parser.add_argument_group("Filtering Options","filter data according to the following options")
 filter_type.add_argument("-b","--before-date",help="List entries before specified date. Use 8 digit YEARMONTHDAY format",type=int)
 filter_type.add_argument("-e","--after-date",help="List entries after specified date. Use 8 digit YEARMONTHDAY format",type=int)
-filter_type.add_argument("-r","--regex",help="Regular Expression. Only Use Entries That Match(not implemented yet)",action="store_true")
+filter_type.add_argument("-r","--regex",help="Regular Expression Search.(basic search works, no regex yet)")
 
 proc_opts = parser.add_argument_group("Proccessing","Use NMAP and/or whois to expand IP Address Ranges and ASNumbers into more IP ranges and IP addresses respectively.")
 proc_opts.add_argument("-N","--nmap",help="Scan Matching IP Address Ranges with NMAP",action="store_true")
@@ -255,14 +255,19 @@ def FilterCountryCodes(ccList,fileLines):
 def FilterRegex(regex,fileLines):
     '''performs a regular expression match against given file lines, return only those that match'''
     #same as above
+    #regular expression is disabled for now, simply because its a being a real pain in
+    #import re
     outList = []
     for line in fileLines:
         testline = line.split(d)
+        #Highly experimental, this probably won't work. This function isn't used right now.
         try:
-            if re.fulltetestline[3]
+            #if re.fullmatch(regex,testline[3]) != None: #yeah, thats commented out for now. good luck getting that working
+            if regex in testline[3]:
+                outList.append(line)
         except:
             continue
-     return outList
+    return outList
 
 #----Below here this is run in order, check to see if each test is called for, and run if applicable ----#
 ##proccess the country list
@@ -309,6 +314,8 @@ for filename in args.filenames:
         filelines = FilterDates(args.before_date,"before",filelines)
     if args.after_date != None:
         filelines = FilterDates(args.after_date,"after",filelines)
+    if args.regex != None:
+        filelines = FilterRegex(args.regex,filelines)
 
     filelines = sorted(FilterCountryCodes(countries,filelines))
     #set up data structures to be used later.
