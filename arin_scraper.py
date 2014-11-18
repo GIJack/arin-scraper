@@ -34,7 +34,7 @@ data_type.add_argument("-n","--asn",help="Autonomous System Numbers(ASN)",action
 filter_type = parser.add_argument_group("Filtering Options","filter data according to the following options")
 filter_type.add_argument("-b","--before-date",help="List entries before specified date. Use 8 digit YEARMONTHDAY format",type=int)
 filter_type.add_argument("-e","--after-date",help="List entries after specified date. Use 8 digit YEARMONTHDAY format",type=int)
-filter_type.add_argument("-r","--regex",help="Regular Expression Search.(basic search works, no regex yet)")
+filter_type.add_argument("-r","--regex",help="Regular Expression Search.(basic search works, no regex yet)",type=str)
 
 proc_opts = parser.add_argument_group("Proccessing","Use NMAP and/or whois to expand IP Address Ranges and ASNumbers into more IP ranges and IP addresses respectively.")
 proc_opts.add_argument("-N","--nmap",help="Scan Matching IP Address Ranges with NMAP",action="store_true")
@@ -122,7 +122,7 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
     #ipBlockList format is the same as the files, [1] being the country code, [3] being the ipblock name.
     if ver == "ASN":
         #new code, all sub-data types are now in cross refrenced dictionaries instead of nested lists.
-        print(colors.fg.orange,ipBlockList[1],colors.reset+"	AS"+ipBlockList[3])
+        print(colors.fg.orange,ipBlockList[1],colors.reset+"	"+colors.bold+colors.fg.cyan+"AS"+ipBlockList[3]+colors.reset)
         if len(asn_ipBlock_dict[ipBlockList[3]]) > 0:
             print("	  \\")
         for Block in asn_ipBlock_dict[ipBlockList[3]]:
@@ -173,7 +173,7 @@ def print_AS_Numbers(asnlist,print_opts):
         elif "expand twice" == print_opts:
             print_ip_block_list(asn,"ASN","expand")
         else:
-            print(colors.fg.orange,asn[1],colors.reset+"	"+asn[3])
+            print(colors.fg.orange,asn[1],colors.reset+"	"+colors.bold+colors.fg.cyan+asn[3]+colors.reset)
 
 def ASN_list_ip_blocks(asnlist,mirror):
     '''Calls ASNWhois to get a list of ipblocks from ARIN databases, two opts, a list of ASNs, and whois mirror, None for defaults'''
@@ -338,7 +338,8 @@ for filename in args.filenames:
 
     ## Transforms. Now we start to use external programs to proccess/transform data into what we want.
     #Start with the largest formation, the Autonomous System Number, use whois to get IPblocks. As of yet, we can't seem to find IPv6 data off ASN lookups, or differeniate. That will change eventually
-    if args.asn2ipblocks == True and len(asn_list) > 1:
+
+    if args.asn2ipblocks == True and len(asn_list) >= 1:
         asn_ipBlock_dict.update(ASN_list_ip_blocks(asn_list,args.whois_server))
     #Now we get into IPBlocks, or IP Networks, we use nmap to transform these into invidual IPs.
     if args.nmap == True:
@@ -348,7 +349,6 @@ for filename in args.filenames:
             ipList.update(nmapScanHosts(ipv6BlockList,args.nmap_opts+" -6"))
         for asn in asn_ipBlock_dict:
             ipList.update(nmapScanHosts(["asn"] + asn_ipBlock_dict[asn],args.nmap_opts))
-
     ### Print and output, Take processed data and return it ###
     ## Header data. Real easy, just re-formated to be human readable, nothing more.
     if args.info == True or args.all == True:
