@@ -34,7 +34,9 @@ data_type.add_argument("-n","--asn",help="Autonomous System Numbers(ASN)",action
 filter_type = parser.add_argument_group("Filtering Options","filter data according to the following options")
 filter_type.add_argument("-b","--before-date",help="List entries before specified date. Use 8 digit YEARMONTHDAY format",type=int)
 filter_type.add_argument("-e","--after-date",help="List entries after specified date. Use 8 digit YEARMONTHDAY format",type=int)
-filter_type.add_argument("-r","--regex",help="Regular Expression Search.(basic search works, no regex yet)",type=str)
+selection_type = filter_type.add_mutually_exclusive_group()
+selection_type.add_argument("-r","--regex",help="Regular Expression Search.(basic search works, no regex yet)",type=str)
+selection_type.add_argument("-s","--select",help="Specify a Single Element to Work With(has to be a basic data type)",type=str)
 
 proc_opts = parser.add_argument_group("Proccessing","Use NMAP and/or whois to expand IP Address Ranges and ASNumbers into more IP ranges and IP addresses respectively.")
 proc_opts.add_argument("-N","--nmap",help="Scan Matching IP Address Ranges with NMAP",action="store_true")
@@ -47,6 +49,7 @@ use_dict = dict_group.add_mutually_exclusive_group()
 use_dict.add_argument("-C","--cc",help="Country Codes: Use specified country codes instead of built in lists(space seperated ISO 3166-1 valid entries)",type=str)
 use_dict.add_argument("-M","--marks-list",help="Use Mark's List of Countries"+colors.fg.lightcyan+ colors.bold+"(default)"+colors.reset,action="store_true")
 use_dict.add_argument("-S","--iso-list",help="Use List of Countries From ISO 3166-1(all of them)",action="store_true")
+
 args = parser.parse_args()
 
 def cidr_convert(total):
@@ -269,6 +272,21 @@ def FilterRegex(regex,fileLines):
             continue
     return outList
 
+def FilterSelect(select,fileLines):
+    '''returns the exact matching fileline, and nothing else'''
+    #same as above
+    #regular expression is disabled for now, simply because its a being a real pain in
+    #import re
+    outList = []
+    for line in fileLines:
+        testline = line.split(d)
+        try:
+            if select == testline[3]:
+                outList.append(line)
+        except:
+            continue
+    return outList
+
 #----Below here this is run in order, check to see if each test is called for, and run if applicable ----#
 ##proccess the country list
 #default is using mark's list of countries.
@@ -316,6 +334,8 @@ for filename in args.filenames:
         filelines = FilterDates(args.after_date,"after",filelines)
     if args.regex != None:
         filelines = FilterRegex(args.regex,filelines)
+    elif args.select != None:
+        filelines = FilterSelect(args.select,filelines)
 
     filelines = sorted(FilterCountryCodes(countries,filelines))
     #set up data structures to be used later.
