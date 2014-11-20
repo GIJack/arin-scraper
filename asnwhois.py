@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Written by GI_Jack for New York Internet corporation.
+# BSD 3-clause licensed see LICENSE
 
 import subprocess
 class ASNWhois:

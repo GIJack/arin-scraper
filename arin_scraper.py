@@ -3,7 +3,7 @@
 # Original use was to look for IPs in countries for Mark to use with FTW to test connectivity around the world. This is now evolving into a proper application
 # See https://my.nyi.net/tickets/view/143661
 # Written by GI_Jack
-# licensed under the GPLv2: https://www.gnu.org/licenses/gpl-2.0.html
+# Licensed under a BSD 3 clause license. see LICENSE
 
 # see arin_scrape.py --help for usage
 # Status files are found here: ftp://ftp.arin.net/pub/stats/

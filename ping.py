@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+#Written by Jack @ nyi. Licensed under the FreeBSD license. See LICENSE
+
 class sys_ping:
     '''this class is a python wrapper for UNIX style ping command'''
 
