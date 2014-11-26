@@ -31,17 +31,18 @@ data_type.add_argument("-4","--ipv4",help="IPv4 IP Blocks",action="store_true")
 data_type.add_argument("-6","--ipv6",help="IPv6 IP Blocks",action="store_true")
 data_type.add_argument("-n","--asn",help="Autonomous System Numbers(ASN)",action="store_true")
 
-filter_type = parser.add_argument_group("Filtering Options","filter data according to the following options")
+filter_type = parser.add_argument_group("Filtering Options","filter data according to the following options. This only applies to top level items found in the status files")
 filter_type.add_argument("-b","--before-date",help="List entries before specified date. Use 8 digit YEARMONTHDAY format",type=int)
 filter_type.add_argument("-e","--after-date",help="List entries after specified date. Use 8 digit YEARMONTHDAY format",type=int)
+filter_type.add_argument("-m","--min-subitems",help="use with -N or -w, returns only basic datatypes that have X many sub-items returned from either nmap or whois(not implemented)",type=int)
 selection_type = filter_type.add_mutually_exclusive_group()
 selection_type.add_argument("-r","--regex",help="Regular Expression Search.(basic search works, no regex yet)",type=str)
 selection_type.add_argument("-s","--select",help="Specify a Single Element to Work With(has to be a basic data type)",type=str)
 
 proc_opts = parser.add_argument_group("Proccessing","Use NMAP and/or whois to expand IP Address Ranges and ASNumbers into more IP ranges and IP addresses respectively.")
 proc_opts.add_argument("-N","--nmap",help="Scan Matching IP Address Ranges with NMAP",action="store_true")
-proc_opts.add_argument("-O","--nmap-opts",help="NMAP commandline options to use with -N, defaults are:'-T5 -sn --max-retries 5'",type=str,default='-T5 -sn --max-retries 5')
-proc_opts.add_argument("-w","--asn2ipblocks",help="Use 'whois' To Find IPaddress Blocks Associated With ASNumber",action="store_true")
+proc_opts.add_argument("-o","--nmap-opts",help="NMAP commandline options to use with -N, defaults are:'-T5 -sn --max-retries 5'",type=str,default='-T5 -sn --max-retries 5')
+proc_opts.add_argument("-W","--asn2ipblocks",help="Use 'whois' To Find IPaddress Blocks Associated With ASNumber",action="store_true")
 proc_opts.add_argument("-h","--whois-server",help="WHOIS server to use with -w",type=str)
 
 dict_group = parser.add_argument_group("Dictionary Options","Specify list of country codes to use")
@@ -122,11 +123,14 @@ def list_ip_blocks(filelines,ver):
 def print_ip_block_list(ipBlockList,ver,print_opts):
     '''Prints IPBlocks, expands using tree structure if need be.'''
     #version is either ASN, IPv4, or IPv6. If the version is ASN, don't print the header, tread this as expansion from the previous level.
-    #ipBlockList format is the same as the files, [1] being the country code, [3] being the ipblock name.
+
+    #ipBlockList format is the same as the files, but broken into a list, [1] being the country code, [3] being the ipblock name.
     if ver == "ASN":
-        #new code, all sub-data types are now in cross refrenced dictionaries instead of nested lists.
+        ## If the version is "ASN", we are working with an ASN datatype, this funciton is called from the print_AS_Numbers() function, and it serves to expand the 
+        #this sets the expansion threshold, omitting entries that don't yield results to make sifting through many entries easier.
+        exp_threshold = 0
         print(colors.fg.lightgreen,ipBlockList[1],colors.reset+"	"+colors.fg.lightcyan+"AS"+ipBlockList[3]+colors.reset)
-        if len(asn_ipBlock_dict[ipBlockList[3]]) > 0:
+        if len(asn_ipBlock_dict[ipBlockList[3]]) > exp_threshold:
             print("	  \\")
         for Block in asn_ipBlock_dict[ipBlockList[3]]:
             print("	  |-"+Block)
@@ -263,6 +267,7 @@ def FilterRegex(regex,fileLines):
         testline = line.split(d)
         #Highly experimental, this probably won't work. This function isn't used right now.
         try:
+            #fourth entry on the line [3] is the item name, either the ASN number, or IP network block.
             #if re.fullmatch(regex,testline[3]) != None: #yeah, thats commented out for now. good luck getting that working
             if regex in testline[3]:
                 outList.append(line)
@@ -272,9 +277,7 @@ def FilterRegex(regex,fileLines):
 
 def FilterSelect(select,fileLines):
     '''returns the exact matching fileline, and nothing else'''
-    #same as above
-    #regular expression is disabled for now, simply because its a being a real pain in
-    #import re
+    #same as above, except this selects exact maching items only, again [3], the fourth item on the line is the item name to match
     outList = []
     for line in fileLines:
         testline = line.split(d)
@@ -336,12 +339,12 @@ for filename in args.filenames:
         filelines = FilterSelect(args.select,filelines)
 
     filelines = sorted(FilterCountryCodes(countries,filelines))
-    #set up data structures to be used later.
+    #set up data structures to be used later. the first three, are used by
     asn_list = []
-    ipList = {}
-    asn_ipBlock_dict = {}
     ipv4BlockList = []
     ipv6BlockList = []
+    ipList = {}
+    asn_ipBlock_dict = {}
 
     ### gather and proccess data into lists###
     ## Start with basic information gathering from the file
