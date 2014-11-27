@@ -29,7 +29,7 @@ class sys_ping:
         indata = indata.split('\\n')
         #last line is a blank, get rid of it
         indata.pop()
-        #next line is the averages, keep splitting until we have a list of the averages in order.
+        #next line is the averages, keep splitting until we have a list of the averages.
         avg_line     = indata.pop()
         avg_line     = avg_line.split()[3]
         avg_line     = avg_line.split("/")
@@ -48,7 +48,7 @@ class sys_ping:
         #this is basicly a spacer line, throw it out as well, and a blank line above it
         indata.pop()
         indata.pop()
-        #after this is the result of the ping packets. they go in the "seq" class.
+        #after this is the result of the ping packets. fill a sequnce list
         sequence = []
         for i in range(len(indata)):
             #the first line is some worthless header shit.
@@ -57,13 +57,16 @@ class sys_ping:
             line = indata[i].split()
             #fifth [4] entry is the first we care about, the sequence number. its generally icmp_seq=<#> lets keep splitting until we get the raw number.
             seq  = line[4].split("=")[1]
+            #seventh [6] entry is the second thing we care about, its the actual ping time in milliseconds.
             time = line[6].split("=")[1]
             sequence.append([seq,time])
         sys_ping.last.sequence = sequence
         return sequence
     class last:
         '''This class stores data from last sys_ping.ping()'''
+        #blank items for avg_line
         min_time,avg_time,max_time,mdev_time = 0,0,0,0
+        #blank items for sum_line
         sent,recieved,pct_loss,op_time = 0,0,0,0
         host = ""
         opts = ""
