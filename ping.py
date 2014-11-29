@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-#Written by Jack @ nyi. Licensed under the FreeBSD license. See LICENSE
+# Written by Jack @ nyi. Licensed under the FreeBSD license. See LICENSE
 
 class sys_ping:
-    '''this class is a python wrapper for UNIX style ping command'''
+    '''this class is a python wrapper for UNIX system ping command, subclass ping does the work, last stores data from the last sysping.ping'''
 
     def ping(target,count,opts):
         '''conducts a ping, returns the data and populates the "last" subclass'''
         import subprocess
         count = str(count)
         indata = ""
+        sys_ping.last.opts = opts
         sys_ping.last.host = target
         #actually do a syscall for the ping and output the data to indata. If ping fails to find a host, it returns error status 2, capture the error and return an error message
         try:
@@ -49,7 +50,7 @@ class sys_ping:
         indata.pop()
         indata.pop()
         #after this is the result of the ping packets. fill a sequnce list
-        sequence = []
+        sequence = {}
         for i in range(len(indata)):
             #the first line is some worthless header shit.
             if i == 0:
@@ -59,7 +60,7 @@ class sys_ping:
             seq  = line[4].split("=")[1]
             #seventh [6] entry is the second thing we care about, its the actual ping time in milliseconds.
             time = line[6].split("=")[1]
-            sequence.append([seq,time])
+            sequence[seq] = time
         sys_ping.last.sequence = sequence
         return sequence
     class last:
@@ -71,4 +72,4 @@ class sys_ping:
         host = ""
         opts = ""
         success = ""
-        sequence = []
+        sequence = {}
