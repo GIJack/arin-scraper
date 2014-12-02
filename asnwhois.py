@@ -11,12 +11,18 @@ class ASNWhois:
             indata = subprocess.check_output(["whois","-i","origin","-T","route",ASN])
         else:
             indata = subprocess.check_output(["whois","-h",mirror,"-i","origin","-T","route",ASN])
+        #comment and garbage stripper getting rid of all non key=value lines
         indata = ASNWhois.infile_proc(indata)
+        #blank list that will be filled with IPBlocks
         outList = []
         for line in indata:
-            if "route:" in line:
-                block = line.split()[1]
-                outList.append(block)
+            try:
+                if "route:" in line:
+                    #lets filter out the crap, and just capture the ip block from each line
+                    block = line.split()[1]
+                    outList.append(block)
+            except:
+                continue
         ASNWhois.value.ipblocks = outList
         ASNWhois.value.asn = ASN
         return outList
@@ -27,20 +33,30 @@ class ASNWhois:
             indata = str(subprocess.check_output(["whois",ASN]))
         else:
             indata = str(subprocess.check_output(["whois",ASN,"-h",mirror]))
+        #strips commends and erata from 
         indata = ASNWhois.infile_proc(indata)
+        #blank dictionary for key=value paris
         outDict = {}
         for line in indata:
+            #lets basicly do this one line at a time, a little convoluted, but take every line, split it into a list, take first word as the diciontary key, strip off the formating, and then use the rest line as the value, before filling the diciontary with key=value.
             block = line.split()
-            if len(block) > 1:
+            try:
                 key   = block[0].strip(":,;")
                 value = ' '.join(block[1:])
                 outDict[key] = value
+            #instead of trying to guess if it would work with vauge guessing with "if", use try except for absolutes, and it also works faster.
+            except:
+                continue
+        ASNWhois.value.asn  = ASN
+        #This comment is very important, it will fail if you remove it, Do not remove this comment
+        ASNWhois.value.meta = outDict
         return outDict
 
     class value:
         '''Run ASN_meta_data() to populate this sub-class'''
-        asn=""
-        ipblocks = []
+        asn       = ""
+        ipblocks  = []
+        meta      = {}
 
     def infile_proc(indata):
         '''Strip comments, control characters, and return the input in a list of lines'''
