@@ -60,12 +60,17 @@ class ASNWhois:
 
     def infile_proc(indata):
         '''Strip comments, control characters, and return the input in a list of lines'''
+        #explcitily turn the data to str type. its returned from the OS call as bytes
         indata = str(indata).strip()
+        #and for some reason this gets carried on
         indata = indata.strip("b'")
+        #and split the data into lines using this double encrusted newline char
         inList = indata.split('\\n')
         fileLines = []
         for line in inList:
             li=line.strip()
+            #finally we look for comments.
             if not li.startswith("%") and not li.startswith("#") and li != "":
+                #yay, whatever is left gets appended
                 fileLines.append(line)
         return fileLines
