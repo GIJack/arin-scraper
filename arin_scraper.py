@@ -288,9 +288,12 @@ def FilterSelect(select,fileLines):
             continue
     return outList
 
-def genMetrics(inDict,data_type,opts):
-    '''Generates value metrics based on a variety of standards given a dictionry with sub-elements'''
-    return -1
+def genMetric(inDict,data_type,opts):
+    '''Generate a value metric score based on a variety of standards given a dictionry with sub-elements'''
+    # we start with 0 and then add 'points' for each item.
+    metric = 0
+#    if data_type == "ASN":
+#        for asn in inDict
 
 #----Below here this is run in order, check to see if each test is called for, and run if applicable ----#
 ##proccess the country list
@@ -347,7 +350,9 @@ for filename in args.filenames:
     asn_list = []
     ipv4BlockList = []
     ipv6BlockList = []
+    global ipList
     ipList = {}
+    global asn_ipBlock_dict
     asn_ipBlock_dict = {}
 
     ### gather and proccess data into lists###
