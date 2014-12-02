@@ -7,6 +7,11 @@ class sys_ping:
     def ping(target,count,opts):
         '''conducts a ping, returns the data and populates the "last" subclass'''
         import subprocess
+        #check to see if the ping count can be used as number, if not, return with an error code
+        try:
+            int(count)
+        except:
+            return -1
         count = str(count)
         indata = ""
         sys_ping.last.opts = opts
