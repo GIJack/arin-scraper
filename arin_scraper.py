@@ -282,11 +282,15 @@ def FilterSelect(select,fileLines):
     for line in fileLines:
         testline = line.split(d)
         try:
-            if select == testline[3]:
+            if testline[3] in select:
                 outList.append(line)
         except:
             continue
     return outList
+
+def genMetrics(inDict,data_type,opts):
+    '''Generates value metrics based on a variety of standards given a dictionry with sub-elements'''
+    return -1
 
 #----Below here this is run in order, check to see if each test is called for, and run if applicable ----#
 ##proccess the country list
