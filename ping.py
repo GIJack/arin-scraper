@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Written by Jack @ nyi. Licensed under the FreeBSD license. See LICENSE
+# This class calls the system's "ping" command and stores the results
 
 class sys_ping:
     '''this class is a python wrapper for UNIX system ping command, subclass ping does the work, last stores data from the last sysping.ping'''
@@ -28,7 +29,7 @@ class sys_ping:
         except subprocess.CalledProcessError:
             #if ping returns an error code, return a failure, and mark the success flag as false
             sys_ping.last.success = False
-            return "ping: host unreachable"
+            return {"error: ping host unreachable":-1}
         #strip trailing and leading characters, and split the lines into a list.
         indata = str(indata).strip("b'")
         indata = indata.strip()
