@@ -29,7 +29,7 @@ class sys_ping:
         except subprocess.CalledProcessError:
             #if ping returns an error code, return a failure, and mark the success flag as false
             sys_ping.last.success = False
-            return {"error: ping host unreachable":-1}
+            return {-1:"error: ping host unreachable"}
         #strip trailing and leading characters, and split the lines into a list.
         indata = str(indata).strip("b'")
         indata = indata.strip()
@@ -57,11 +57,11 @@ class sys_ping:
         indata.pop()
         #after this is the result of the ping packets. fill a sequnce list
         sequence = {}
-        for i in range(len(indata)):
-            #the first line is some worthless header shit.
-            if i == 0:
-                continue
-            line = indata[i].split()
+        #the first line is a worthless header.
+        del(indata[0])
+        #the rest of them are the actual ping sequence, fill them into a dictionary of sequence:pingtime
+        for line in indata:
+            line = line.split()
             #fifth [4] entry is the first we care about, the sequence number. its generally icmp_seq=<#> lets keep splitting until we get the raw number.
             seq  = line[4].split("=")[1]
             #seventh [6] entry is the second thing we care about, its the actual ping time in milliseconds.
