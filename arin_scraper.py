@@ -288,12 +288,53 @@ def FilterSelect(select,fileLines):
             continue
     return outList
 
-def genMetric(inDict,data_type,opts):
-    '''Generate a value metric score based on a variety of standards given a dictionry with sub-elements'''
+def compositeMetric(value,data_type,opts):
+    '''Generate a value metric score based on a variety of standards given a dictionry with sub-elements, datatype can be "ASN" or "NET"'''
     # we start with 0 and then add 'points' for each item.
     metric = 0
-#    if data_type == "ASN":
-#        for asn in inDict
+    if data_type == "ASN":
+        #measure the score of
+        blockscore = 0
+        pingscore  = 0
+        sampleIpList = []
+        #first type of metric for measuring ASNs is amount and size of assigned IP blocks.
+        for ipblock in asn_ipBlock_dict[value]:
+            ipblock = asn_ipBlock_dict[ipblock].split("/")
+            #networks are scored by size of IP that is not the host name, giving a weighted value to the ASN
+            blockscore += ( 32 - int(ipblock[1]) )
+            #Now lets check if any IP addresses are resolved for the block
+            if len(ipList[ipblock]) > 0:
+                #lets get the first ip in the list, and add it to the sample list. We will later use these for traceroute.
+                sampleIpList.append(ipList[ipblock][0])
+                #use the pingMetric() to get the score for every IP address
+                for ipaddr in ipList[ipblock]:
+                    pingscore += pingMetric(ipaddr,3,None)
+        metric = blockscore + pingscore
+    #do score for a block of IPs.
+    if data_type == "NET":
+        pingscore = 0
+        for ipaddr in ipList[value]:
+            pingscore += pingMetric(ipaddr,3,None)
+        metric = pingscore
+    #finish by returing the composite metric
+    return metric
+
+def pingMetric(host,count,opts):
+    '''this function uses sys_ping to computer the value metric score for any IP, which is 1 over average ping time'''
+    from ping import sys_ping
+    #start with a base score of zero and add from here.
+    pingscore = 0
+    #pass this along the the ping class in ping.py, generate scores
+    sys_ping.ping(host,count,opts)
+    #if we get no results from ping, just return 0, no score, adds nothing to the greater metric.
+    if sys_ping.last.success == False:
+        return 0
+    #after a certain point, faster ping times have diminishing returns as far as usefulness, but because of the algorythm, exponential score increases. We cap this by max allowing the pingscore of any specific IP to return 2, or .5 milliseconds.
+    if sys_ping.last.avg_time < 0.5
+        sys_ping.last.avg_time = 0.5
+    #the ping score is 1 over the average ping time with a best score of 2.0 being 0.5 ms
+    pingscore += ( 1 / sys_ping.last.avg_time )
+    return pingscore
 
 #----Below here this is run in order, check to see if each test is called for, and run if applicable ----#
 ##proccess the country list
