@@ -330,7 +330,7 @@ def pingMetric(host,count,opts):
     if sys_ping.last.success == False:
         return 0
     #after a certain point, faster ping times have diminishing returns as far as usefulness, but because of the algorythm, exponential score increases. We cap this by max allowing the pingscore of any specific IP to return 2, or .5 milliseconds.
-    if sys_ping.last.avg_time < 0.5
+    if sys_ping.last.avg_time < 0.5:
         sys_ping.last.avg_time = 0.5
     #the ping score is 1 over the average ping time with a best score of 2.0 being 0.5 ms
     pingscore += ( 1 / sys_ping.last.avg_time )
