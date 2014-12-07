@@ -320,7 +320,7 @@ def compositeMetric(value,data_type,opts):
     return metric
 
 def pingMetric(host,count,opts):
-    '''this function uses sys_ping to computer the value metric score for any IP, which is 1 over average ping time'''
+    '''Uses sys_ping to compute the value metric score for any IP, based on ping times'''
     from utils.ping import sys_ping
     #start with a base score of zero and add from here.
     pingscore = 0
@@ -335,6 +335,34 @@ def pingMetric(host,count,opts):
     #the ping score is 1 over the average ping time with a best score of 2.0 being 0.5 ms
     pingscore += ( 1 / sys_ping.last.avg_time )
     return pingscore
+
+def traceMetric(host,opts):
+    '''Uses sys_traceroute to compute value metric score for any IP, based on traceroute data'''
+    from utils.traceroute import sys_traceroute
+    import iputils
+    #start with base score of zero
+    tracescore = 0
+    sys_traceroute.traceroute(host,opts)
+    #check for failures. Failure returns nothing.
+    if sys_traceroute.last.success == False:
+        return 0
+    #now some for some voodooo. lets count the amount of times a second level domain appears at the end of a traceroute
+    
+    for hop in sys_traceroute.last.sequence:
+        host = sys_traceroute.last.sequence[hop][0]
+        host = host.split()
+        #if the host is an IP address
+        if host == sys_traceroute.last.sequence[hop][1]:
+            #USE ipwhois to get whois data from the IP address
+            whois = ipwhois.IPWhois(host)
+            #from a dictionary in a list in a dictionary, go grab the parent block of the IP. and split it into name cidr
+            ipblock = whois.lookup()['nets'][0]['cidr'].split('/')
+            
+            #TODO write some code comparing the IP address's IP block to see if it matches IP address block of the target network.
+        #if its actual DNS
+        else:
+            True
+    return tracescore
 
 #----Below here this is run in order, check to see if each test is called for, and run if applicable ----#
 ##proccess the country list
