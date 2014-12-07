@@ -12,6 +12,7 @@ iputils
 python3
 python3-nmap
 python3-argparse(for old versions of python before 3.2)
+python3-ipwhois
 
 Recommended Usage:
 Start by reading the help on the command line:
