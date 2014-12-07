@@ -23,7 +23,7 @@ class sys_traceroute:
         except subprocess.CalledProcessError:
             #if ping returns an error code, return a failure, and mark the success flag as false
             sys_traceroute.last.success = False
-            return {-1:"error: ping host unreachable"}
+            return {-1:"error: cannot traceroute host"}
         #strip trailing and leading characters, and split the lines into a list.
         indata = str(indata).strip("b'")
         indata = indata.strip()
@@ -54,10 +54,12 @@ class sys_traceroute:
             #Now fill them all into a list in a dictionary, with the sequence number as key
             sequence[seq] = [host,ip,ping1,ping2,ping3]
         sys_traceroute.last.sequence = sequence
+        sys_traceroute.last.hops    = len(sys_traceroute.last.sequence)
         return sequence
 
     class last:
         host = ""
         opts = ""
+        hops = 0
         max_hops = 0
         sequence = {}

@@ -182,7 +182,7 @@ def print_AS_Numbers(asnlist,print_opts):
 
 def ASN_list_ip_blocks(asnlist,mirror):
     '''Calls ASNWhois to get a list of ipblocks from ARIN databases, two opts, a list of ASNs, and whois mirror, None for defaults'''
-    from asnwhois import ASNWhois
+    from utils.asnwhois import ASNWhois
     outDict = {}
     for asn in asnlist:
         target = "AS" + asn[3]
@@ -260,7 +260,7 @@ def FilterCountryCodes(ccList,fileLines):
 def FilterRegex(regex,fileLines):
     '''performs a regular expression match against given file lines, return only those that match'''
     #same as above
-    #regular expression is disabled for now, simply because its a being a real pain in
+    #regular expression is disabled for now, simply because its a being a real pain in the ass
     #import re
     outList = []
     for line in fileLines:
@@ -321,7 +321,7 @@ def compositeMetric(value,data_type,opts):
 
 def pingMetric(host,count,opts):
     '''this function uses sys_ping to computer the value metric score for any IP, which is 1 over average ping time'''
-    from ping import sys_ping
+    from utils.ping import sys_ping
     #start with a base score of zero and add from here.
     pingscore = 0
     #pass this along the the ping class in ping.py, generate scores
@@ -355,7 +355,6 @@ elif args.marks_list == True:
 countries = sorted(countries)
 
 #We do this one file at a time. This program is file oriented, as in transforming data in an ARIN status file.
-#import sys
 for filename in args.filenames:
     #open the file and dump its lines into a list. If it cannot read the file, throws an error, now with better exception handling
     try:
