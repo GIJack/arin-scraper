@@ -292,8 +292,8 @@ def compositeMetric(value,data_type,opts):
     '''Generate a value metric score based on a variety of standards given a dictionry with sub-elements, datatype can be "ASN" or "NET"'''
     # we start with 0 and then add 'points' for each item.
     metric = 0
-   import random 
-   if data_type == "ASN":
+    import random 
+    if data_type == "ASN":
         #measure the scores of block size, ping times, depth of network(traceroute), and amount of IPs
         blockscore   = 0
         pingscore    = 0
