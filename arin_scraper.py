@@ -292,30 +292,50 @@ def compositeMetric(value,data_type,opts):
     '''Generate a value metric score based on a variety of standards given a dictionry with sub-elements, datatype can be "ASN" or "NET"'''
     # we start with 0 and then add 'points' for each item.
     metric = 0
-    if data_type == "ASN":
-        #measure the score of
-        blockscore = 0
-        pingscore  = 0
-        sampleIpList = []
+   import random 
+   if data_type == "ASN":
+        #measure the scores of block size, ping times, depth of network(traceroute), and amount of IPs
+        blockscore   = 0
+        pingscore    = 0
+        tracescore   = 0
+        ipcountscore = 0
         #first type of metric for measuring ASNs is amount and size of assigned IP blocks.
         for ipblock in asn_ipBlock_dict[value]:
             ipblock = asn_ipBlock_dict[ipblock].split("/")
-            #networks are scored by size of IP that is not the host name, giving a weighted value to the ASN
-            blockscore += ( 32 - int(ipblock[1]) )
+            #networks are scored by size of network mask times 2, giving a weighted value to the ASN
+            blockscore += ( 32 - int(ipblock[1]) ) * 2
             #Now lets check if any IP addresses are resolved for the block
             if len(ipList[ipblock]) > 0:
-                #lets get the first ip in the list, and add it to the sample list. We will later use these for traceroute.
-                sampleIpList.append(ipList[ipblock][0])
+                #get the traceroute score from the first IP in the block
+                tracescore += traceMetric(ipList[ipblock][0],None)
                 #use the pingMetric() to get the score for every IP address
-                for ipaddr in ipList[ipblock]:
+                #for ipaddr in ipList[ipblock]:
+                #    pingscore += pingMetric(ipaddr,3,None)
+                #instead of using every IP, use three at random
+                for i in range(3):
+                    rand_ip = random.choice(ipList[ipblock])
                     pingscore += pingMetric(ipaddr,3,None)
-        metric = blockscore + pingscore
+                #next count all the IPs in the block, and DiViDE by eight for the count score
+                countscore += len(ipList[ipblock]) / 8
+                
+        metric = blockscore + pingscore + tracescore + countscore
     #do score for a block of IPs.
     if data_type == "NET":
-        pingscore = 0
-        for ipaddr in ipList[value]:
+        #use ping and traceroute to determine value of ips based on metrics
+        pingscore  = 0
+        tracescore = 0
+        #use three random IPs for ping instead of the entire range
+        for i in range(3):
+            rand_ip = random.choice(ipList[value])
             pingscore += pingMetric(ipaddr,3,None)
-        metric = pingscore
+        #old method of pinging every IP in the block
+        #for ipaddr in ipList[value]:
+        #    pingscore += pingMetric(ipaddr,3,None)
+        ## Next we do a traceroute on the first IP address in the block
+        tracescore += traceMetric(ipList[value][0],None)
+        ## Last we do a count score that counts the amount of IPs in the block minus divided by eight
+        countscore = len(ipList[value]) / 8
+        metric = pingscore + tracescore + countscore
     #finish by returing the composite metric
     return metric
 
