@@ -18,9 +18,10 @@ Recommended Usage:
 Start by reading the help on the command line:
 
 ./arin_scraper.py --help
-usage: arin_scraper.py [-h] [-a] [-i] [-4] [-6] [-n] [-b BEFORE_DATE]
-                       [-e AFTER_DATE] [-r] [-N] [-O NMAP_OPTS] [-w]
-                       [-s WHOIS_SERVER] [-C CC | -M | -S]
+usage: arin_scraper.py [-?] [-a] [-i] [-4] [-6] [-n] [-b BEFORE_DATE]
+                       [-e AFTER_DATE] [-m MIN_SUBITEMS]
+                       [-r REGEX | -s SELECT] [-N] [-o NMAP_OPTS] [-W]
+                       [-h WHOIS_SERVER] [-C CC | -M | -S]
                        filenames [filenames ...]
 
 This app parses data about ASNs and IP address ranges from ARIN Statistics
@@ -31,7 +32,7 @@ positional arguments:
   filenames             files to proccess
 
 optional arguments:
-  -h, --help            show this help message and exit
+  -?, --help            Show This Help Message
 
 Data Types:
   return/proccess lines matching these types
@@ -43,7 +44,8 @@ Data Types:
   -n, --asn             Autonomous System Numbers(ASN)
 
 Filtering Options:
-  filter data according to the following options
+  filter data according to the following options. This only applies to top
+  level items found in the status files
 
   -b BEFORE_DATE, --before-date BEFORE_DATE
                         List entries before specified date. Use 8 digit
@@ -51,21 +53,29 @@ Filtering Options:
   -e AFTER_DATE, --after-date AFTER_DATE
                         List entries after specified date. Use 8 digit
                         YEARMONTHDAY format
-  -r, --regex           Regular Expression. Only Use Entries That Match(not
-                        implemented yet)
+  -m MIN_SUBITEMS, --min-subitems MIN_SUBITEMS
+                        use with -N or -w, returns only basic datatypes that
+                        have X many sub-items returned from either nmap or
+                        whois(not implemented)
+  -r REGEX, --regex REGEX
+                        Regular Expression Search.(basic search works, no
+                        regex yet)
+  -s SELECT, --select SELECT
+                        Specify a Single Element to Work With(has to be a
+                        basic data type)
 
 Proccessing:
   Use NMAP and/or whois to expand IP Address Ranges and ASNumbers into more
   IP ranges and IP addresses respectively.
 
   -N, --nmap            Scan Matching IP Address Ranges with NMAP
-  -O NMAP_OPTS, --nmap-opts NMAP_OPTS
-                        Command line options to use with NMAP, defaults
+  -o NMAP_OPTS, --nmap-opts NMAP_OPTS
+                        NMAP commandline options to use with -N, defaults
                         are:'-T5 -sn --max-retries 5'
-  -w, --asn2ipblocks    Use 'whois' To Find IPaddress Blocks Associated With
+  -W, --asn2ipblocks    Use 'whois' To Find IPaddress Blocks Associated With
                         ASNumber
-  -s WHOIS_SERVER, --whois-server WHOIS_SERVER
-                        ARIN Whois Server To User
+  -h WHOIS_SERVER, --whois-server WHOIS_SERVER
+                        WHOIS server to use with -w
 
 Dictionary Options:
   Specify list of country codes to use
