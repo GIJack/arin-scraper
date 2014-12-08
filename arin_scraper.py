@@ -339,29 +339,38 @@ def pingMetric(host,count,opts):
 def traceMetric(host,opts):
     '''Uses sys_traceroute to compute value metric score for any IP, based on traceroute data'''
     from utils.traceroute import sys_traceroute
-    import iputils
+    import ipwhois
     #start with base score of zero
     tracescore = 0
     sys_traceroute.traceroute(host,opts)
     #check for failures. Failure returns nothing.
     if sys_traceroute.last.success == False:
         return 0
-    #now some for some voodooo. lets count the amount of times a second level domain appears at the end of a traceroute
-    
+    ## For our first trick, we count the number of hops that match the network name of the specified host. We *might* have
+    #get the name of the network the host is on from whois
+    whois = ipwhois.IPWhois(host)
+    hostNetName = whois.lookup()['nets'][0]['name']
+    hopcount = 0
+    #For every IP in the traceroute, now get the network name and add one to the count if it matches the host's network
     for hop in sys_traceroute.last.sequence:
-        host = sys_traceroute.last.sequence[hop][0]
-        host = host.split()
-        #if the host is an IP address
-        if host == sys_traceroute.last.sequence[hop][1]:
-            #USE ipwhois to get whois data from the IP address
-            whois = ipwhois.IPWhois(host)
-            #from a dictionary in a list in a dictionary, go grab the parent block of the IP. and split it into name cidr
-            ipblock = whois.lookup()['nets'][0]['cidr'].split('/')
-            
-            #TODO write some code comparing the IP address's IP block to see if it matches IP address block of the target network.
-        #if its actual DNS
-        else:
-            True
+        #second item in a list in a dictionary is the IP address
+        hop_ip = sys_traceroute.last.sequence[hop][1]
+        #USE ipwhois to get whois data from the IP address
+        whois = ipwhois.IPWhois(hop_ip)
+        #now, grab the name of the network from whois
+        hop_NetName = whois.lookup()['nets'][0]['name']
+        #if the network name of the hop is the same as the network name of the target host, increment by 1
+        if hop_NetName == HostNetName:
+            hopcount += 1
+
+    #generate a composite of amount hops to the target, minus how many are in the network, under maximum amount of hops. 
+    distscore = (hopcount - sys_traceroute.last.hops)
+    #Min hops is limited to 5 to because raw arithmatic differs greatly from our needs at certain points
+    if distscore < 5:
+        distscore = 5
+    distscore = sys_traceroute.last.max_hops / distscore
+    #add the scores together
+    tracescore = hopscore + distscore
     return tracescore
 
 #----Below here this is run in order, check to see if each test is called for, and run if applicable ----#
