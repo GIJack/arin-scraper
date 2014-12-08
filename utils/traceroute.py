@@ -54,7 +54,7 @@ class sys_traceroute:
             #Now fill them all into a list in a dictionary, with the sequence number as key
             sequence[seq] = [host,ip,ping1,ping2,ping3]
         sys_traceroute.last.sequence = sequence
-        sys_traceroute.last.hops    = len(sys_traceroute.last.sequence)
+        sys_traceroute.last.hops     = len(sys_traceroute.last.sequence)
         return sequence
 
     class last:
