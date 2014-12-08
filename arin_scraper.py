@@ -312,22 +312,29 @@ def compositeMetric(value,data_type,opts):
                 #for ipaddr in ipList[ipblock]:
                 #    pingscore += pingMetric(ipaddr,3,None)
                 #instead of using every IP, use three at random
+                ping_primative = 0
                 for i in range(3):
                     rand_ip = random.choice(ipList[ipblock])
-                    pingscore += pingMetric(ipaddr,3,None)
+                    ping_primative += pingMetric(ipaddr,3,None)
                 #next count all the IPs in the block, and DiViDE by eight for the count score
+                pingscore += ping_primative * (len(ipList[value]/3))
                 countscore += len(ipList[ipblock]) / 8
                 
         metric = blockscore + pingscore + tracescore + countscore
     #do score for a block of IPs.
     if data_type == "NET":
-        #use ping and traceroute to determine value of ips based on metrics
-        pingscore  = 0
-        tracescore = 0
-        #use three random IPs for ping instead of the entire range
+        #use ping, traceroute, a count of IPs, and size of the network to 
+        pingscore   = 0
+        tracescore  = 0
+        countscore  = 0
+        blockscore  = 0
+        net_tokens = value.split("/")
+        #networks are scored by size of network mask times 2, giving a weighted value to the ASN
+        blockscore += ( 32 - int(net_tokens[1]) ) * 2
+        #use three random IPs for ping instead of the entire range, multiplied by total ips divided by 3
         for i in range(3):
             rand_ip = random.choice(ipList[value])
-            pingscore += pingMetric(ipaddr,3,None)
+            pingscore += pingMetric(ipaddr,3,None) * (len(ipList[value]/3))
         #old method of pinging every IP in the block
         #for ipaddr in ipList[value]:
         #    pingscore += pingMetric(ipaddr,3,None)
@@ -335,7 +342,8 @@ def compositeMetric(value,data_type,opts):
         tracescore += traceMetric(ipList[value][0],None)
         ## Last we do a count score that counts the amount of IPs in the block minus divided by eight
         countscore = len(ipList[value]) / 8
-        metric = pingscore + tracescore + countscore
+        #make the composite metric by adding all the invidual composites.
+        metric = blockscore + pingscore + tracescore + countscore
     #finish by returing the composite metric
     return metric
 
