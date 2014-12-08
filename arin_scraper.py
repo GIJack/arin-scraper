@@ -401,7 +401,7 @@ def traceMetric(host,opts):
     tracescore = hopscore + distscore
     return tracescore
 
-#----Below here this is run in order, check to see if each test is called for, and run if applicable ----#
+###----MAIN PROGRAM ----###
 ##proccess the country list
 #default is using mark's list of countries.
 countries = marksCountries
@@ -516,4 +516,4 @@ for filename in args.filenames:
         #If nmap and whois are both selected, make a full tree:
         elif args.nmap == True:
             print_AS_Numbers(asn_list,"expand twice")
-exit()
+
