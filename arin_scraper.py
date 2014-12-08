@@ -282,7 +282,7 @@ def FilterSelect(select,fileLines):
     for line in fileLines:
         testline = line.split(d)
         try:
-            if testline[3] in select:
+            if testline[3] == select:
                 outList.append(line)
         except:
             continue
