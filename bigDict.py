@@ -5,7 +5,7 @@
 
 '''Big Dictionary File, for extremely long lists, dictionaries, and classes to keep them out of the mainfile to reduce clutter. Mostly large amounts of static data in lookup tables'''
 
-#Mark's list of countries he needs information from, see arin_scraper.py, comments at top
+#Mark's list of countries he needs information on
 marksCountries=['AO', 'BJ', 'BW', 'BF', 'BI', 'CM', 'CV', 'CF', 'TD', 'CD', 'GQ', 'EG', 'ER', 'ET', 'GA', 'GM', 'GH', 'GN', 'GW', 'GY', 'CI', 'KE', 'LS', 'LY', 'MG', 'MW', 'ML', 'MR', 'MU', 'YT', 'MA', 'MZ', 'NA', 'NE', 'NG', 'CG', 'RW', 'SN', 'SC', 'SO', 'ZA', 'SZ', 'TZ', 'TG', 'TN', 'UG', 'EH', 'ZM', 'ZW', 'AP', 'AS', 'AU', 'BD', 'BY', 'BT', 'MM', 'KH', 'CN', 'CX', 'FJ', 'PF', 'GU', 'HK', 'IN', 'ID', 'JP', 'KI', 'LA', 'MO', 'MY', 'MV', 'MH', 'MN', 'NP', 'NZ', 'KP', 'PK', 'PH', 'WS', 'SG', 'KR', 'LK', 'TW', 'TH', 'TO', 'VU', 'VN', 'GL', 'IS', 'EU', 'DZ', 'HG', 'BN', 'HR', 'CY', 'XK', 'LV', 'MK', 'MT', 'MD', 'ME', 'RS', 'SK', 'SI', 'AL', 'AD', 'DK', 'FO', 'FR', 'GI', 'VA', 'IE', 'IM', 'JE', 'LU', 'MC', 'PT', 'ES', 'GB', 'AT', 'BE', 'BG', 'CH', 'CZ', 'DE', 'EE', 'FI', 'GR', 'HU', 'IT', 'NL', 'LI', 'LT', 'NO', 'PL', 'RO', 'RU', 'SE', 'UA', 'AF', 'AM', 'AZ', 'BH', 'IO', 'GE', 'IR', 'IQ', 'IL', 'JO', 'KZ', 'KW', 'KG', 'LB', 'LR', 'OM', 'QA', 'SA', 'SD', 'SY', 'TJ', 'TR', 'TM', 'AE', 'UZ', 'YE', 'AG', 'AI', 'AQ', 'AR', 'AW', 'BS', 'BB', 'BZ', 'BM', 'BO', 'BR', 'VG', 'CL', 'CO', 'CR', 'CU', 'DM', 'DO', 'EC', 'SV', 'FK', 'GD', 'GT', 'HT', 'HN', 'JM', 'MS', 'MX', 'NI', 'PA', 'PY', 'PE', 'PR', 'SR', 'TT', 'UY', 'VI', 'VE']
 
 #All ISO 3166-1 country codes, to make the script more unversal
