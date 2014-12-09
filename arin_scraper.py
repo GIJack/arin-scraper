@@ -21,7 +21,7 @@ import argparse
 parser = argparse.ArgumentParser(description='''This app parses data about ASNs and IP address ranges from ARIN Statistics Files, and look for hosts based on system name ARIN's Status files can be found on their FTP server here:
 ftp://ftp.arin.net/pub/stats/''',
 add_help=False)
-parser.add_argument("filenames",nargs='+',help="files to proccess")
+parser.add_argument("filenames",nargs='+',help="ARIN Status Files To Proccess")
 parser.add_argument("-?", "--help", help="Show This Help Message", action="help")
 
 data_type = parser.add_argument_group("Data Types","return/proccess lines matching these types")
@@ -34,7 +34,7 @@ data_type.add_argument("-n","--asn",help="Autonomous System Numbers(ASN)",action
 filter_type = parser.add_argument_group("Filtering Options","filter data according to the following options. This only applies to top level items found in the status files")
 filter_type.add_argument("-b","--before-date",help="List entries before specified date. Use 8 digit YEARMONTHDAY format",type=int)
 filter_type.add_argument("-e","--after-date",help="List entries after specified date. Use 8 digit YEARMONTHDAY format",type=int)
-filter_type.add_argument("-m","--min-subitems",help="use with -N or -w, returns only basic datatypes that have X many sub-items returned from either nmap or whois(not implemented)",type=int)
+
 selection_type = filter_type.add_mutually_exclusive_group()
 selection_type.add_argument("-r","--regex",help="Regular Expression Search.(basic search works, no regex yet)",type=str)
 selection_type.add_argument("-s","--select",help="Specify a Single Element to Work With(has to be a basic data type)",type=str)
@@ -49,7 +49,7 @@ dict_group = parser.add_argument_group("Dictionary Options","Specify list of cou
 use_dict = dict_group.add_mutually_exclusive_group()
 use_dict.add_argument("-C","--cc",help="Country Codes: Use specified country codes instead of built in lists(space seperated ISO 3166-1 valid entries)",type=str)
 use_dict.add_argument("-M","--marks-list",help="Use Mark's List of Countries"+colors.fg.lightcyan+ colors.bold+"(default)"+colors.reset,action="store_true")
-use_dict.add_argument("-S","--iso-list",help="Use List of Countries From ISO 3166-1(all of them)",action="store_true")
+use_dict.add_argument("-S","--iso-list",help="Use List of Countries From ISO 3166-1",action="store_true")
 
 args = parser.parse_args()
 
@@ -334,6 +334,7 @@ def compositeMetric(value,data_type,opts):
         #use three random IPs for ping instead of the entire range, multiplied by total ips divided by 3
         for i in range(3):
             rand_ip = random.choice(ipList[value])
+            #This comment is here for absolutely no reason
             pingscore += pingMetric(ipaddr,3,None) * (len(ipList[value]/3))
         #old method of pinging every IP in the block
         #for ipaddr in ipList[value]:
