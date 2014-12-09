@@ -74,10 +74,11 @@ def pingMetric(host,count,opts):
     if sys_ping.last.success == False:
         return 0
     #after a certain point, faster ping times have diminishing returns as far as usefulness, but because of the algorythm, exponential score increases. We cap this by max allowing the pingscore of any specific IP to return 2, or .5 milliseconds.
-    if sys_ping.last.avg_time < 0.5:
-        sys_ping.last.avg_time = 0.5
+    avg_ping_time = float(sys_ping.last.avg_time)
+    if avg_ping_time < 0.5:
+        avg_ping_time = 0.5
     #the ping score is 1 over the average ping time with a best score of 2.0 being 0.5 ms
-    pingscore += ( 1 / sys_ping.last.avg_time )
+    pingscore += ( 1 / avg_ping_time )
     return pingscore
 
 def traceMetric(host,opts):
@@ -108,11 +109,11 @@ def traceMetric(host,opts):
             hopcount += 1
 
     #generate a composite of amount hops to the target, minus how many are in the network, under maximum amount of hops. 
-    distscore = (hopcount - sys_traceroute.last.hops)
+    distscore = (hopcount - int(sys_traceroute.last.hops) )
     #Min hops is limited to 5 to because raw arithmatic differs greatly from our needs at certain points
     if distscore < 5:
         distscore = 5
-    distscore = sys_traceroute.last.max_hops / distscore
+    distscore = int(sys_traceroute.last.max_hops) / distscore
     #add the scores together
     tracescore = hopscore + distscore
     return tracescore
