@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-# This is a library file for arin-scraper, putting all the filters in a seperate file
+# This is a library file for arin-scraper.py that handles line filtering
 # Written by jack @ nyi
 # Licensed under a BSD 3 clause license. see LICENSE
-#field delimeter
+
+#field delimeter that ARIN uses
 d="|"
+
 def FilterDates(dateIn,operator,fileLines):
     '''Returns fileLines filtered for only lines that match the date. Operator is either of the strings "before" or "after"'''
     filteredLines = []
