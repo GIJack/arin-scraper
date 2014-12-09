@@ -94,27 +94,31 @@ def traceMetric(host,opts):
     ## For our first trick, we count the number of hops that match the network name of the specified host. We *might* have
     #get the name of the network the host is on from whois
     whois = ipwhois.IPWhois(host)
-    hostNetName = whois.lookup()['nets'][0]['name']
+    hostNetName = whois.lookup()['nets'][0]['description']
     hopcount = 0
     #For every IP in the traceroute, now get the network name and add one to the count if it matches the host's network
     for hop in sys_traceroute.last.sequence:
         #second item in a list in a dictionary is the IP address
         hop_ip = sys_traceroute.last.sequence[hop][1]
-        #USE ipwhois to get whois data from the IP address
-        whois = ipwhois.IPWhois(hop_ip)
+        try:
+            #USE ipwhois to get whois data from the IP address
+            whois = ipwhois.IPWhois(hop_ip)
+        except:
+            #This will fail if there is a private IP somewhere in the chain, we simply ignore private IPs
+            continue
         #now, grab the name of the network from whois
-        hop_NetName = whois.lookup()['nets'][0]['name']
+        hop_NetName = whois.lookup()['nets'][0]['description']
         #if the network name of the hop is the same as the network name of the target host, increment by 1
-        if hop_NetName == HostNetName:
+        if hop_NetName == hostNetName:
             hopcount += 1
 
     #generate a composite of amount hops to the target, minus how many are in the network, under maximum amount of hops. 
-    distscore = (hopcount - int(sys_traceroute.last.hops) )
+    distscore = (int(sys_traceroute.last.hops) - hopcount )
     #Min hops is limited to 5 to because raw arithmatic differs greatly from our needs at certain points
     if distscore < 5:
         distscore = 5
-    distscore = int(sys_traceroute.last.max_hops) / distscore
+    distscore = ( int(sys_traceroute.last.max_hops) / distscore )
     #add the scores together
-    tracescore = hopscore + distscore
+    tracescore = ( hopcount + distscore )
     return tracescore
 
