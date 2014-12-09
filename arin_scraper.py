@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 # This script parses and proccess ARIN's textfiles from their FTP server.
 # Original use was to look for IPs in countries for Mark to use with FTW to test connectivity around the world. This is now evolving into a proper application
-# See https://my.nyi.net/tickets/view/143661
-# Written by GI_Jack
-# Licensed under a BSD 3 clause license. see LICENSE
+# Written by jack @ nyi
+# Licensed under a FreeBSD's 3 clause BSD license. see LICENSE
 
 # see arin_scrape.py --help for usage
 # Status files are found here: ftp://ftp.arin.net/pub/stats/
