@@ -221,71 +221,6 @@ def nmapScanHosts(targetList,opts):
                 outDict[host[0]].append(host[i])
     return outDict
 
-def FilterDates(dateIn,operator,fileLines):
-    '''Returns fileLines filtered for only lines that match the date. Operator is either of the strings "before" or "after"'''
-    filteredLines = []
-    for line in fileLines:
-        #the line is a raw read from the file that uses "|" delimeted fields. split this into a list, so we can access each field from a list index. "d" is defined at the top of the file as "|"
-        testline = line.split(d)
-        #If there is less than seven fields, then the data is invalid. Skip this line.
-        if len(line) < 7:
-            continue
-        #the sixth [5] field of an entry is the date stamp. Sometimes there is no datestamp, or the datestamp is blank. If so, ignore(mabey default "00000000", to before???)
-        elif line[5] == "00000000" or line[5] == "":
-            continue
-        #Now we can check if the dates match. two sub functions, "before" and "after"
-        if operator == "before":
-            if int(testline[5]) < dateIn:
-                filteredLines.append(line)
-        elif operator == "after":
-            if int(testline[5]) > dateIn:
-                filteredLines.append(line)
-    return filteredLines
-
-def FilterCountryCodes(ccList,fileLines):
-    '''Returns only filelines that match given country codes'''
-    outList = []
-    for line in fileLines:
-        #format the line. strip the return character, and then split the fields of the line using field delimeters(d is "|")
-        testline = line.split(d)
-        #the second entry on the line [1] is the country code. If the country code matches, put it in the list
-        try:
-            if testline[1] in ccList:
-                outList.append(line)
-        except:
-            continue
-    return outList
-
-def FilterRegex(regex,fileLines):
-    '''performs a regular expression match against given file lines, return only those that match'''
-    #same as above
-    #regular expression is disabled for now, simply because its a being a real pain in the ass
-    #import re
-    outList = []
-    for line in fileLines:
-        testline = line.split(d)
-        #Highly experimental, this probably won't work. This function isn't used right now.
-        try:
-            #fourth entry on the line [3] is the item name, either the ASN number, or IP network block.
-            #if re.fullmatch(regex,testline[3]) != None: #yeah, thats commented out for now. good luck getting that working
-            if regex in testline[3]:
-                outList.append(line)
-        except:
-            continue
-    return outList
-
-def FilterSelect(select,fileLines):
-    '''returns the exact matching fileline, and nothing else'''
-    #same as above, except this selects exact maching items only, again [3], the fourth item on the line is the item name to match
-    outList = []
-    for line in fileLines:
-        testline = line.split(d)
-        try:
-            if testline[3] == select:
-                outList.append(line)
-        except:
-            continue
-    return outList
 
 def compositeMetric(value,data_type,opts):
     '''Generate a value metric score based on a variety of standards given a dictionry with sub-elements, datatype can be "ASN" or "NET"'''
@@ -420,6 +355,7 @@ elif args.marks_list == True:
 countries = sorted(countries)
 
 #We do this one file at a time. This program is file oriented, as in transforming data in an ARIN status file.
+from filters import *
 for filename in args.filenames:
     #open the file and dump its lines into a list. If it cannot read the file, throws an error, now with better exception handling
     try:
