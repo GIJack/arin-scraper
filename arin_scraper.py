@@ -70,7 +70,7 @@ def date_convert(indate):
         month   = int(indate[4:6])
         day     = int(indate[6:8])
         import datetime
-        return datetime.date(year,month,day).strftime("%A %d. %B %Y")
+        return datetime.date(year,month,day).strftime("%a %B %d, %Y")
     except:
         return "Unknown		"
 
