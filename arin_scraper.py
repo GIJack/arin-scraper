@@ -221,7 +221,15 @@ def nmapScanHosts(targetList,opts):
                 outDict[host[0]].append(host[i])
     return outDict
 
-
+def populateValueMetrics():
+    '''perfoms value metric scoring on top level items'''
+    from metrics import *
+    ##Start with ASNs
+    for asn in asn_ipBlock_dict:
+        valueMetricScore[asn]      = metrics.asnMetric(asn)
+    ##Next IP Blocks
+    for ipblock in ipList:
+        valueMetricsScore[ipblock] = metrics.netMetric(ipblock)
 
 ###----MAIN PROGRAM ----###
 ##proccess the country list
@@ -283,6 +291,8 @@ for filename in args.filenames:
     ipList = {}
     global asn_ipBlock_dict
     asn_ipBlock_dict = {}
+    global valueMetricScore
+    valueMetricScore = {}
 
     ### gather and proccess data into lists###
     ## Start with basic information gathering from the file
