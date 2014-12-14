@@ -3,6 +3,8 @@
 # Written by jack @ nyi
 # Licensed under a BSD 3 clause license. see LICENSE
 
+
+## obsolete, expect to be removed soon).
 def compositeMetric(value,data_type,opts):
     '''Generate a value metric score based on a variety of standards given a dictionry with sub-elements, datatype can be "ASN" or "NET"'''
     # we start with 0 and then add 'points' for each item.
@@ -32,8 +34,8 @@ def compositeMetric(value,data_type,opts):
                     rand_ip = random.choice(ipList[ipblock])
                     ping_primative += pingMetric(ipaddr,3,None)
                 #next count all the IPs in the block, and DiViDE by eight for the count score
-                pingscore += ping_primative * (len(ipList[value]/3))
-                countscore += len(ipList[ipblock]) / 8
+                pingscore = ping_primative * (len(ipList[value]/3))
+                countscore = len(ipList[ipblock]) / 8
                 
         metric = blockscore + pingscore + tracescore + countscore
     #do score for a block of IPs.
@@ -63,8 +65,50 @@ def compositeMetric(value,data_type,opts):
     #finish by returing the composite metric
     return metric
 
+### Second Level Metrics ASN and IP Block scores ###
+
+def netMetric(network):
+    '''Generates a composite score value score for an network based on metrics'''
+    # we start with 0 and then add 'points' for each item.
+    metric = 0
+    import random
+    #use ping, traceroute, a count of IPs, and size of the network to 
+    pingscore   = 0
+    tracescore  = 0
+    countscore  = 0
+    blockscore  = 0
+    net_tokens = value.split("/")
+    #networks are scored by size of network mask times 2, giving a weighted value to the ASN
+    blockscore = ( 32 - int(net_tokens[1]) ) * 2
+    #use three random IPs for ping instead of the entire range, multiplied by total ips divided by 3
+    ping_primative = 0
+    for i in range(3):
+       rand_ip = random.choice(ipList[value])
+       #This comment is here for absolutely no reason
+       ping_primative += pingMetric(ipaddr,3,None)
+
+    pingscore = ping_primative * (len(ipList[value]/3))
+    ## Next we do a traceroute on the first IP address in the block
+    tracescore = traceMetric(ipList[value][0],None)
+    ## Last we do a count score that counts the amount of IPs in the block minus divided by eight
+    countscore = len(ipList[value]) / 8
+    #make the composite metric by adding all the invidual composites.
+    metric = blockscore + pingscore + tracescore + countscore
+    #finish by returing the composite metric
+    return metric
+
+def asnMetric(asnumber):
+    '''Generates a composite score value score for an ASN based on network metrics'''
+    # we start with 0 and then add 'points' for each item.
+    metric = 0
+    #get the scores for all the ipblocks in the ASN.   
+    for ipblock in asn_ipBlock_dict[asnumber]:
+        metric += netMetric[ipblock]
+    return metric
+
+### Primative Metrics ping, and traceroute ###
 def pingMetric(host,count,opts):
-    '''Uses sys_ping to compute the value metric score for any IP, based on ping times'''
+    '''Uses sys_ping to compute the value metric score for an IP'''
     from utils.ping import sys_ping
     #start with a base score of zero and add from here.
     pingscore = 0
@@ -82,7 +126,7 @@ def pingMetric(host,count,opts):
     return pingscore
 
 def traceMetric(host,opts):
-    '''Uses sys_traceroute to compute value metric score for any IP, based on traceroute data'''
+    '''Uses sys_traceroute to compute value metric score for an IP'''
     from utils.traceroute import sys_traceroute
     import ipwhois
     #start with base score of zero
