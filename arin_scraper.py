@@ -231,6 +231,10 @@ def populateValueMetrics():
     for ipblock in ipList:
         valueMetricsScore[ipblock] = metrics.netMetric(ipblock)
 
+def printValueMetric(num_entries,ent_type):
+    #todo write some code to print out entries gotten by value metrics
+    return None
+
 ###----MAIN PROGRAM ----###
 ##proccess the country list
 #default is using mark's list of countries.
