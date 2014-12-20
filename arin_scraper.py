@@ -64,12 +64,13 @@ def cidr_convert(total):
 
 def date_convert(indate):
     '''When given a single 8 digit number for YEARMONTHDAY, converts into a standard date'''
+    import datetime
     try:
         indate  = str(indate)
         year    = int(indate[:4])
         month   = int(indate[4:6])
         day     = int(indate[6:8])
-        import datetime
+
         return datetime.date(year,month,day).strftime("%a %B %d, %Y")
     except:
         return "Unknown		"
