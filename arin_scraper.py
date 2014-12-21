@@ -45,10 +45,16 @@ proc_opts.add_argument("-W","--asn2ipblocks",help="Use 'whois' To Find IPaddress
 proc_opts.add_argument("-h","--whois-server",help="WHOIS server to use with -w",type=str)
 
 dict_group = parser.add_argument_group("Dictionary Options","Specify list of country codes to use")
-use_dict = dict_group.add_mutually_exclusive_group()
-use_dict.add_argument("-C","--cc",help="Country Codes: Use specified country codes instead of built in lists(space seperated ISO 3166-1 valid entries)",type=str)
+use_dict   = dict_group.add_mutually_exclusive_group()
+use_dict.add_argument("-C","--cc"        ,help="Country Codes: Use specified country codes instead of built in lists(space seperated ISO 3166-1 valid entries)",type=str)
 use_dict.add_argument("-M","--marks-list",help="Use Mark's List of Countries"+colors.fg.lightcyan+ colors.bold+"(default)"+colors.reset,action="store_true")
-use_dict.add_argument("-S","--iso-list",help="Use List of Countries From ISO 3166-1",action="store_true")
+use_dict.add_argument("-S","--iso-list"  ,help="Use List of Countries From ISO 3166-1",action="store_true")
+
+out_opts_parent = parser.add_argument_group("Output Options","Format to display data(not yet implemented)")
+out_opts        = out_opts_parent.add_mutually_exclusive_group()
+out_opts.add_argument("-t","--output-tree"  ,help="hierarchal tree output showing resolves and parent units"+colors.fg.lightcyan+ colors.bold+"(default)"+colors.reset,action="store_true")
+out_opts.add_argument("-w","--output-FTW"   ,help="Outputs to a comma seperated list, of Country,IP address",action="store_true")
+out_opts.add_argument("-p","--output-python",help="output raw python data structures(lists, and dicts)",action="store_true")
 
 args = parser.parse_args()
 
@@ -70,7 +76,6 @@ def date_convert(indate):
         year    = int(indate[:4])
         month   = int(indate[4:6])
         day     = int(indate[6:8])
-
         return datetime.date(year,month,day).strftime("%a %B %d, %Y")
     except:
         return "Unknown		"
@@ -224,7 +229,7 @@ def nmapScanHosts(targetList,opts):
 
 def populateValueMetrics():
     '''perfoms value metric scoring on top level items'''
-    from metrics import *
+    import metrics
     ##Start with ASNs
     for asn in asn_ipBlock_dict:
         valueMetricScore[asn]      = metrics.asnMetric(asn)
