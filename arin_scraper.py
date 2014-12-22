@@ -39,10 +39,11 @@ selection_type.add_argument("-r","--regex",help="Regular Expression Search.(basi
 selection_type.add_argument("-s","--select",help="Specify a Single Element to Work With(has to be a basic data type)",type=str)
 
 proc_opts = parser.add_argument_group("Proccessing","Use NMAP and/or whois to expand IP Address Ranges and ASNumbers into more IP ranges and IP addresses respectively.")
-proc_opts.add_argument("-N","--nmap",help="Scan Matching IP Address Ranges with NMAP",action="store_true")
-proc_opts.add_argument("-o","--nmap-opts",help="NMAP commandline options to use with -N, defaults are:'-T5 -sn --max-retries 5'",type=str,default='-T5 -sn --max-retries 5')
+proc_opts.add_argument("-N","--nmap",        help="Scan Matching IP Address Ranges with NMAP",action="store_true")
+proc_opts.add_argument("-o","--nmap-opts",   help="NMAP commandline options to use with -N, defaults are:'-T5 -sn --max-retries 5'",type=str,default='-T5 -sn --max-retries 5')
 proc_opts.add_argument("-W","--asn2ipblocks",help="Use 'whois' To Find IPaddress Blocks Associated With ASNumber",action="store_true")
 proc_opts.add_argument("-h","--whois-server",help="WHOIS server to use with -w",type=str)
+proc_opts.add_argument("-T","--add-metrics", help="Perform value metrics and sort by value metrics",action="store_true")
 
 dict_group = parser.add_argument_group("Dictionary Options","Specify list of country codes to use")
 use_dict   = dict_group.add_mutually_exclusive_group()
@@ -146,8 +147,9 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
     else:
         print(colors.bold,colors.fg.yellow,"	",ver,"Address blocks",colors.reset)
         print(colors.bold,"CC	IPBlock	 	CIDR",colors.reset)
-        for i in range(len(ipBlockList)):
-            line = ipBlockList[i]
+        #for i in range(len(ipBlockList)):
+        #    line = ipBlockList[i]
+        for line in ipBlockList:
             print(colors.fg.lightgreen,line[1],colors.reset+"	"+colors.fg.lightcyan+line[3]+colors.reset+"	"+line[4])
             if print_opts == "expand":
                 print_ip_list(ipList[line[3]+line[4]],None)
@@ -161,6 +163,13 @@ def print_ip_list(ipList,print_opts):
         print(spacing+"\\")
         for address in ipList:
             print(spacing+"|-"+address)
+
+def printValueMetric(entry,spacing):
+    '''prints out value metric scoring for unit'''
+    data = valueMetricScore[entry]
+    if spacing == None:
+         spacing = ""
+    print(spacing+"metric-score")
 
 def list_AS_numbers(filelines):
     '''returns the lines of the list that are ASN entries, takes the filelist as unput'''
@@ -237,9 +246,10 @@ def populateValueMetrics():
     for ipblock in ipList:
         valueMetricsScore[ipblock] = metrics.netMetric(ipblock)
 
-def printValueMetric(num_entries,ent_type):
-    #todo write some code to print out entries gotten by value metrics
-    return None
+def printFTWlist():
+    '''prints data in an output format that can be read by varnish and HAproxy'''
+    #and now for something diffrent, pure proccessing, all killer, no filler. just
+    return -1
 
 ###----MAIN PROGRAM ----###
 ##proccess the country list
