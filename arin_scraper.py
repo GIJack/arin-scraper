@@ -52,7 +52,7 @@ use_dict.add_argument("-S","--iso-list"  ,help="Use List of Countries From ISO 3
 
 out_opts_parent = parser.add_argument_group("Output Options","Format to display data(not yet implemented)")
 out_opts        = out_opts_parent.add_mutually_exclusive_group()
-out_opts.add_argument("-t","--output-tree"  ,help="hierarchal tree output showing resolves and parent units"+colors.fg.lightcyan+ colors.bold+"(default)"+colors.reset,action="store_true")
+out_opts.add_argument("-t","--output-tree"  ,help="hierarchal tree output designed to be human readable"+colors.fg.lightcyan+ colors.bold+"(default)"+colors.reset,action="store_true")
 out_opts.add_argument("-w","--output-FTW"   ,help="Outputs to a comma seperated list, of Country,IP address",action="store_true")
 out_opts.add_argument("-p","--output-python",help="output raw python data structures(lists, and dicts)",action="store_true")
 
@@ -328,7 +328,12 @@ for filename in args.filenames:
             ipList.update(nmapScanHosts(ipv6BlockList,args.nmap_opts+" -6"))
         for asn in asn_ipBlock_dict:
             ipList.update(nmapScanHosts(["asn"] + asn_ipBlock_dict[asn],args.nmap_opts))
+
+
     ### Print and output, Take processed data and return it ###
+    if args.output_python == True:
+        print( [file_meta.filename,file_meta.version,file_meta.serial,file_meta.startdate,file_meta.enddate,file_meta.offset],[asn_list,ipv4BlockList,ipv6BlockList],[ipList,asn_ipBlock_dict,valueMetricScore] )
+        continue
     ## Header data. Real easy, just re-formated to be human readable, nothing more.
     if args.info == True or args.all == True:
         print_metadata()
