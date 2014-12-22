@@ -11,53 +11,8 @@
 #The delimeter for fields that ARIN uses
 d="|"
 
-#All static lookup tables moved to the "Big Dictionary" file.
-from bigDict import *
-
-#argument parsing code.
-import argparse
-#Argument parser
-parser = argparse.ArgumentParser(description='''This app parses data about ASNs and IP address ranges from ARIN Statistics Files, and look for hosts based on system name ARIN's Status files can be found on their FTP server here:
-ftp://ftp.arin.net/pub/stats/''',
-add_help=False)
-parser.add_argument("filenames",nargs='+',help="ARIN Status Files To Proccess")
-parser.add_argument("-?", "--help", help="Show This Help Message", action="help")
-
-data_type = parser.add_argument_group("Data Types","return/proccess lines matching these types")
-data_type.add_argument("-a","--all",help="All Information(equiv of -i46n)",action="store_true")
-data_type.add_argument("-i","--info",help="Metadata Information",action="store_true")
-data_type.add_argument("-4","--ipv4",help="IPv4 IP Blocks",action="store_true")
-data_type.add_argument("-6","--ipv6",help="IPv6 IP Blocks",action="store_true")
-data_type.add_argument("-n","--asn",help="Autonomous System Numbers(ASN)",action="store_true")
-
-filter_type = parser.add_argument_group("Filtering Options","filter data according to the following options. This only applies to top level items found in the status files")
-filter_type.add_argument("-b","--before-date",help="List entries before specified date. Use 8 digit YEARMONTHDAY format",type=int)
-filter_type.add_argument("-e","--after-date",help="List entries after specified date. Use 8 digit YEARMONTHDAY format",type=int)
-
-selection_type = filter_type.add_mutually_exclusive_group()
-selection_type.add_argument("-r","--regex",help="Regular Expression Search.(basic search works, no regex yet)",type=str)
-selection_type.add_argument("-s","--select",help="Specify a Single Element to Work With(has to be a basic data type)",type=str)
-
-proc_opts = parser.add_argument_group("Proccessing","Use NMAP and/or whois to expand IP Address Ranges and ASNumbers into more IP ranges and IP addresses respectively.")
-proc_opts.add_argument("-N","--nmap",        help="Scan Matching IP Address Ranges with NMAP",action="store_true")
-proc_opts.add_argument("-o","--nmap-opts",   help="NMAP commandline options to use with -N, defaults are:'-T5 -sn --max-retries 5'",type=str,default='-T5 -sn --max-retries 5')
-proc_opts.add_argument("-W","--asn2ipblocks",help="Use 'whois' To Find IPaddress Blocks Associated With ASNumber",action="store_true")
-proc_opts.add_argument("-h","--whois-server",help="WHOIS server to use with -w",type=str)
-proc_opts.add_argument("-T","--add-metrics", help="Perform value metrics and sort by value metrics",action="store_true")
-
-dict_group = parser.add_argument_group("Dictionary Options","Specify list of country codes to use")
-use_dict   = dict_group.add_mutually_exclusive_group()
-use_dict.add_argument("-C","--cc"        ,help="Country Codes: Use specified country codes instead of built in lists(space seperated ISO 3166-1 valid entries)",type=str)
-use_dict.add_argument("-M","--marks-list",help="Use Mark's List of Countries"+colors.fg.lightcyan+ colors.bold+"(default)"+colors.reset,action="store_true")
-use_dict.add_argument("-S","--iso-list"  ,help="Use List of Countries From ISO 3166-1",action="store_true")
-
-out_opts_parent = parser.add_argument_group("Output Options","Format to display data(not yet implemented)")
-out_opts        = out_opts_parent.add_mutually_exclusive_group()
-out_opts.add_argument("-t","--output-tree"  ,help="hierarchal tree output designed to be human readable"+colors.fg.lightcyan+ colors.bold+"(default)"+colors.reset,action="store_true")
-out_opts.add_argument("-w","--output-FTW"   ,help="Outputs to a comma seperated list, of Country,IP address",action="store_true")
-out_opts.add_argument("-p","--output-python",help="output raw python data structures(lists, and dicts)",action="store_true")
-
-args = parser.parse_args()
+#if __name__ == "__main__":
+#    main_function()
 
 def cidr_convert(total):
     '''Converts Total amount of IP addresses to coresponding cidr notation
@@ -147,8 +102,6 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
     else:
         print(colors.bold,colors.fg.yellow,"	",ver,"Address blocks",colors.reset)
         print(colors.bold,"CC	IPBlock	 	CIDR",colors.reset)
-        #for i in range(len(ipBlockList)):
-        #    line = ipBlockList[i]
         for line in ipBlockList:
             print(colors.fg.lightgreen,line[1],colors.reset+"	"+colors.fg.lightcyan+line[3]+colors.reset+"	"+line[4])
             if print_opts == "expand":
@@ -252,6 +205,50 @@ def printFTWlist():
     return -1
 
 ###----MAIN PROGRAM ----###
+#All static lookup tables moved to the "Big Dictionary" file.
+from bigDict import *
+#argument parsing code.
+import argparse
+parser = argparse.ArgumentParser(description='''This app parses data about ASNs and IP address ranges from ARIN Statistics Files, and look for hosts based on system name ARIN's Status files can be found on their FTP server here:
+ftp://ftp.arin.net/pub/stats/''',
+add_help=False)
+parser.add_argument("filenames",nargs='+',help="ARIN Status Files To Proccess")
+parser.add_argument("-?", "--help", help="Show This Help Message", action="help")
+
+data_type = parser.add_argument_group("Data Types","return/proccess lines matching these types")
+data_type.add_argument("-a","--all",help="All Information(equiv of -i46n)",action="store_true")
+data_type.add_argument("-i","--info",help="Metadata Information",action="store_true")
+data_type.add_argument("-4","--ipv4",help="IPv4 IP Blocks",action="store_true")
+data_type.add_argument("-6","--ipv6",help="IPv6 IP Blocks",action="store_true")
+data_type.add_argument("-n","--asn",help="Autonomous System Numbers(ASN)",action="store_true")
+
+filter_type = parser.add_argument_group("Filtering Options","filter data according to the following options. This only applies to top level items found in the status files")
+filter_type.add_argument("-b","--before-date",help="List entries before specified date. Use 8 digit YEARMONTHDAY format",type=int)
+filter_type.add_argument("-e","--after-date",help="List entries after specified date. Use 8 digit YEARMONTHDAY format",type=int)
+
+selection_type = filter_type.add_mutually_exclusive_group()
+selection_type.add_argument("-r","--regex",help="Regular Expression Search.(basic search works, no regex yet)",type=str)
+selection_type.add_argument("-s","--select",help="Specify a Single Element to Work With(has to be a basic data type)",type=str)
+proc_opts = parser.add_argument_group("Proccessing","Use NMAP and/or whois to expand IP Address Ranges and ASNumbers into more IP ranges and IP addresses respectively.")
+proc_opts.add_argument("-N","--nmap",        help="Scan Matching IP Address Ranges with NMAP",action="store_true")
+proc_opts.add_argument("-o","--nmap-opts",   help="NMAP commandline options to use with -N, defaults are:'-T5 -sn --max-retries 5'",type=str,default='-T5 -sn --max-retries 5')
+proc_opts.add_argument("-W","--asn2ipblocks",help="Use 'whois' To Find IPaddress Blocks Associated With ASNumber",action="store_true")
+proc_opts.add_argument("-h","--whois-server",help="WHOIS server to use with -w",type=str)
+proc_opts.add_argument("-T","--do-metrics", help="Perform value metrics and sort by value metrics",action="store_true")
+
+dict_group = parser.add_argument_group("Dictionary Options","Specify list of country codes to use")
+use_dict   = dict_group.add_mutually_exclusive_group()
+use_dict.add_argument("-C","--cc"        ,help="Country Codes: Use specified country codes instead of built in lists(space seperated ISO 3166-1 valid entries)",type=str)
+use_dict.add_argument("-M","--marks-list",help="Use Mark's List of Countries"+colors.fg.lightcyan+ colors.bold+"(default)"+colors.reset,action="store_true")
+use_dict.add_argument("-S","--iso-list"  ,help="Use List of Countries From ISO 3166-1",action="store_true")
+
+out_opts_parent = parser.add_argument_group("Output Options","Format to display data(not yet implemented)")
+out_opts        = out_opts_parent.add_mutually_exclusive_group()
+out_opts.add_argument("-t","--output-tree"  ,help="hierarchal tree output designed to be human readable"+colors.fg.lightcyan+ colors.bold+"(default)"+colors.reset,action="store_true")
+out_opts.add_argument("-w","--output-FTW"   ,help="Outputs to a comma seperated list, of Country,IP address",action="store_true")
+out_opts.add_argument("-p","--output-python",help="output raw python data structures(lists, and dicts)",action="store_true")
+
+args = parser.parse_args()
 ##proccess the country list
 #default is using mark's list of countries.
 countries = marksCountries
@@ -273,7 +270,7 @@ countries = sorted(countries)
 from filters import *
 from metrics import *
 for filename in args.filenames:
-    #open the file and dump its lines into a list. If it cannot read the file, throws an error, now with better exception handling
+#open the file and dump its lines into a list. If it cannot read the file, throws an error, now with better exception handling
     try:
         infile = open(filename,"r")
         filelines = infile.readlines()
@@ -313,7 +310,6 @@ for filename in args.filenames:
     asn_ipBlock_dict = {}
     global valueMetricScore
     valueMetricScore = {}
-
     ### gather and proccess data into lists###
     ## Start with basic information gathering from the file
     #start with IP addresses
@@ -324,7 +320,6 @@ for filename in args.filenames:
     #now do the same with ASNs.
     if args.asn == True or args.all == True:
         asn_list += list_AS_numbers(filelines)
-
     ## Transforms. Now we start to use external programs to proccess/transform data into what we want.
     #Start with the largest formation, the Autonomous System Number, use whois to get IPblocks. As of yet, we can't seem to find IPv6 data off ASN lookups, or differeniate. That will change eventually
 
@@ -338,16 +333,16 @@ for filename in args.filenames:
             ipList.update(nmapScanHosts(ipv6BlockList,args.nmap_opts+" -6"))
         for asn in asn_ipBlock_dict:
             ipList.update(nmapScanHosts(["asn"] + asn_ipBlock_dict[asn],args.nmap_opts))
-
-
+    #value metric checking
+    if args.do_metrics == True:
+        populateValueMetrics()
     ### Print and output, Take processed data and return it ###
     if args.output_python == True:
-        print( [file_meta.filename,file_meta.version,file_meta.serial,file_meta.startdate,file_meta.enddate,file_meta.offset],[asn_list,ipv4BlockList,ipv6BlockList],[ipList,asn_ipBlock_dict,valueMetricScore] )
+        print( [file_meta.filename,file_meta.version,file_meta.serial,file_meta.startdate,file_meta.enddate,file_meta.offset], [asn_list,ipv4BlockList,ipv6BlockList], [ipList,asn_ipBlock_dict,valueMetricScore] )
         continue
     ## Header data. Real easy, just re-formated to be human readable, nothing more.
     if args.info == True or args.all == True:
         print_metadata()
-
     ## IP address handling, if there is a -4 or a -6 in the command line
     #If version 4 blocks are requested, with no transform options
     useipv4 = args.ipv4 or args.all
@@ -363,10 +358,8 @@ for filename in args.filenames:
             print_ip_block_list(ipv4BlockList,"IPv4","expand")
         if useipv6 == True:
             print_ip_block_list(ipv6BlockList,"IPv6","expand")
-
-    ##ASN handling
+     ##ASN handling
     useasn = args.asn == True or args.all == True
-
     if useasn == True and args.asn2ipblocks != True:
         print_AS_Numbers(asn_list,None)
     elif useasn == True and args.asn2ipblocks == True:
