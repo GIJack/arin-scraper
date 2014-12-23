@@ -17,8 +17,14 @@ d="|"
 def cidr_convert(total):
     '''Converts Total amount of IP addresses to coresponding cidr notation
        address block, takes a single number'''
-    total = str(total)
-    cidr_dict = {'16777216':"/8", '8388608':"/9", '4194304':"/10", '2097152':"/11", '1048576':"/12", '524288':"/13", '262144':"/14", '131072':"/15", '65536':"/16", '32768':"/17", '16384':"/18", '8192':"/19", '4096':"/20", '2048':"/21", '1024':"/22", '512':"/23", '256':"/24" ,'128':"/25", '64':"/26", '32':"/27", '16':"/28", '8':"/29"}
+    total = int(total)
+    cidr_dict = {16777216:"/8", 8388608:"/9", 4194304:"/10", 2097152:"/11", 1048576:"/12", 524288:"/13", 262144:"/14", 131072:"/15", 65536:"/16", 32768:"/17", 16384:"/18", 8192:"/19", 4096:"/20", 2048:"/21", 1024:"/22", 512:"/23", 256:"/24" ,128:"/25", 64:"/26", 32:"/27", 16:"/28", 8:"/29"}
+    cidr_list = sorted(cidr_dict,reverse=True)
+    if total not in cidr_dict:
+        for subnet in cidr_list:
+            if total < subnet:
+                total = subnet
+                break
     try:
         return cidr_dict[total]
     except:
