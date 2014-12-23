@@ -22,7 +22,7 @@ def cidr_convert(total):
     cidr_list = sorted(cidr_dict,reverse=True)
     if total not in cidr_dict:
         for subnet in cidr_list:
-            if total < subnet:
+            if total > subnet:
                 total = subnet
                 break
     try:
