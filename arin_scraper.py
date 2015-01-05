@@ -239,6 +239,7 @@ filter_type.add_argument("-e","--after-date", help="List entries after specified
 selection_type = filter_type.add_mutually_exclusive_group()
 selection_type.add_argument("-r","--regex",  help="Regular Expression Search.(basic search works, no regex yet)",type=str)
 selection_type.add_argument("-s","--select", help="Specify a Single Element to Work With(has to be a basic data type)",type=str)
+
 proc_opts = parser.add_argument_group("Proccessing","Use NMAP and/or whois to expand IP Address Ranges and ASNumbers into more IP ranges and IP addresses respectively.")
 proc_opts.add_argument("-N","--nmap",        help="Scan Matching IP Address Ranges with NMAP",action="store_true")
 proc_opts.add_argument("-o","--nmap-opts",   help="NMAP commandline options to use with -N, defaults are:'-T5 -sn --max-retries 5'",type=str,default='-T5 -sn --max-retries 5')
@@ -299,7 +300,7 @@ for filename in args.filenames:
     except:
         print(filename,"is not an ARIN statistics file!")
         continue
-    #Now filter dates as set in args
+    #Filters go here!
     if args.before_date != None:
         filelines = FilterDates(args.before_date,"before",filelines)
     if args.after_date != None:
