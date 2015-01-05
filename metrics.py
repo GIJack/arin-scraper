@@ -16,19 +16,19 @@ def netMetric(network):
     tracescore  = 0
     #countscore  = 0 #countscore is commented out because its reduntant to "pingscore" which is a normalized ping relivant count
     blockscore  = 0
-    net_tokens = value.split("/")
+    net_tokens = network.split("/")
     #networks are scored by size of network mask times 2, giving a weighted value to the ASN
     blockscore = ( 32 - int(net_tokens[1]) ) * 2
     #use three random IPs for ping instead of the entire range, 
     ping_primative = 0
     for i in range(3):
-       rand_ip = random.choice(ipList[value])
+       rand_ip = random.choice(ipList[network])
        #This comment is here for absolutely no reason
        ping_primative += pingMetric(ipaddr,3,None)
     #normalize the results of the pings for the entire range, giving the score a weight of the amount of hosts relative to their ping times, from only three sample IPs
-    pingscore = ping_primative * (len(ipList[value]/3))
+    pingscore = ping_primative * (len(ipList[network]/3))
     ## Next we do a traceroute on the first IP address in the block, this should be the router.
-    tracescore = traceMetric(ipList[value][0],None)
+    tracescore = traceMetric(ipList[network][0],None)
     ## Last we do a count score that counts the amount of IPs in the block divided by eight
     #countscore = len(ipList[value]) / 8
     #make the composite metric by adding all the individual composites.
