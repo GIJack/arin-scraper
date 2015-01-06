@@ -207,11 +207,10 @@ def populateValueMetrics():
     ##Next IP Blocks
     for ipblock in ipList:
         valueMetricsScore[ipblock] = metrics.netMetric(ipblock)
-    print(valueMetricScore)
 
 def printFTWlist():
     '''prints data in an output format that can be read by varnish and HAproxy'''
-    #and now for something diffrent, pure proccessing, all killer, no filler. just
+    #and now for something diffrent, pure proccessing, all killer, no filler. Eventually. Right now, just a mere empty function returning an error code
     return -1
 
 ###----MAIN PROGRAM ----###
