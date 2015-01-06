@@ -349,7 +349,7 @@ for filename in args.filenames:
 
     ### Print and output, Take processed data and return it ###
     if args.output_python == True:
-        print( [file_meta.filename,file_meta.version,file_meta.serial,file_meta.startdate,file_meta.enddate,file_meta.offset], [asn_list,ipv4BlockList,ipv6BlockList], [ipList,asn_ipBlock_dict,valueMetricScore] )
+        print( ( [file_meta.filename,file_meta.version,file_meta.serial,file_meta.startdate,file_meta.enddate,file_meta.offset], [asn_list,ipv4BlockList,ipv6BlockList], [ipList,asn_ipBlock_dict,valueMetricScore] ) )
         continue
     ## Header data. Real easy, just re-formated to be human readable, nothing more.
     if args.info == True or args.all == True:
