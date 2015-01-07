@@ -51,8 +51,8 @@ def hostMetric(hostname):
     '''generates a composite score value for quality of a single IP/host'''
     metric = 0
     #This one is pretty straight forward. a host's score is simply its ping and traceroute scores.
-    pingscore  = pingMetric(host)
-    tracescore = traceMetric(host)
+    pingscore  = pingMetric(hostname)
+    tracescore = traceMetric(hostname)
     metric = pingscore + tracescore
     return metric
 
