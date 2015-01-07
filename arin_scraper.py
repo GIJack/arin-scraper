@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-# This script parses and proccess ARIN's textfiles from their FTP server.
-# Original use was to look for IPs in countries for Mark to use with FTW to test connectivity around the world. This is now evolving into a proper application
+# This script parses and proccess ARIN's statusfiles from their FTP server, and can discover networks from ASNs, and IPs from networks, using external tools.
+# It can also output to FTW loadbalancer config files
 # Written by jack @ nyi
 # Licensed under FreeBSD's 3 clause BSD license. see LICENSE
 
-# see arin_scrape.py --help for usage
+# see arin_scraper.py --help for usage, and README for dependencies and installation instructions
 # Status files are found here: ftp://ftp.arin.net/pub/stats/
-# python lib for nmap backend http://xael.org/norman/python/python-nmap
 
 #The delimeter for fields that ARIN uses
 d="|"
@@ -197,16 +196,16 @@ def nmapScanHosts(targetList,opts):
                 outDict[host[0]].append(host[i])
     return outDict
 
-def populateValueMetrics():
+def populateValueMetrics(ipList,asn_ipBlock_dict,valueMetricScore):
     '''perfoms value metric scoring on top level items'''
     import metrics
-    global valueMetricScore
     ##Start with ASNs
     for asn in asn_ipBlock_dict:
-        valueMetricScore[asn]      = metrics.asnMetric(asn)
+        valueMetricScore[asn]      = metrics.asnMetric(asn,ipList,asn_ipBlock_dict)
     ##Next IP Blocks
     for ipblock in ipList:
-        valueMetricsScore[ipblock] = metrics.netMetric(ipblock)
+        valueMetricScore[ipblock] = metrics.netMetric(ipblock,ipList)
+    return valueMetricScore
 
 def printFTWlist():
     '''prints data in an output format that can be read by varnish and HAproxy'''
@@ -345,7 +344,7 @@ for filename in args.filenames:
             ipList.update(nmapScanHosts(["asn"] + asn_ipBlock_dict[asn],args.nmap_opts))
     #value metric checking
     if args.do_metrics == True:
-        populateValueMetrics()
+        valueMetricScore = populateValueMetrics(ipList,asn_ipBlock_dict,valueMetricScore)
 
     ### Print and output, Take processed data and return it ###
     if args.output_python == True:

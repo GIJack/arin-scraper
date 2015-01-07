@@ -5,12 +5,11 @@
 
 ### Second Level Metrics ASN and IP Block scores ###
 
-def netMetric(network):
+def netMetric(network,ipList):
     '''Generates a composite score value score for an network based on metrics'''
     # we start with 0 and then add 'points' for each item.
     metric = 0
     import random
-    global ipList
     #use ping, traceroute, a count of IPs, and size of the network to 
     pingscore   = 0
     tracescore  = 0
@@ -24,14 +23,14 @@ def netMetric(network):
     for i in range(3):
        rand_ip = random.choice(ipList[network])
        #This comment is here for absolutely no reason
-       ping_primative += pingMetric(ipaddr,3,None)
+       ping_primative += pingMetric(rand_ip,3,None)
     #normalize the results of the pings for the entire range, giving the score a weight of the amount of hosts relative to their ping times, from only three sample IPs
-    pingscore = ping_primative * (len(ipList[network]/3))
+    pingscore = ping_primative * (len(ipList[network]) / 3)
     ## Next we do a traceroute on the first IP address in the block, this should be the router.
     tracescore = traceMetric(ipList[network][0],None)
     ## Last we do a count score that counts the amount of IPs in the block divided by eight
     #countscore = len(ipList[value]) / 8
-    #make the composite metric by adding all the individual composites.
+    #make the composite metric by adding all the individual scores.
     #metric = blockscore + pingscore + tracescore + countscore
     metric = blockscore + pingscore + tracescore
     #finish by returing the composite metric
@@ -44,7 +43,7 @@ def asnMetric(asnumber):
     global asn_ipBlock_dict
     #get the scores for all the ipblocks in the ASN.   
     for ipblock in asn_ipBlock_dict[asnumber]:
-        metric += netMetric[ipblock]
+        metric += netMetric(ipblock,ipList)
     return metric
 
 def hostMetric(hostname):
