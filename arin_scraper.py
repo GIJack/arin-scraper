@@ -91,13 +91,20 @@ def list_ip_blocks(filelines,ver):
 def print_ip_block_list(ipBlockList,ver,print_opts):
     '''Prints IPBlocks, expands using tree structure if need be.'''
     #version is either ASN, IPv4, or IPv6. If the version is ASN, don't print the header, tread this as expansion from the previous level.
-
+    #the addon and addontitle expand the lines in tree mode for more information some hackery for expanded info
+    addontitle = ""
+    use_date   = False
     #ipBlockList format is the same as the files, but broken into a list, [1] being the country code, [3] being the ipblock name.
     if ver == "ASN":
         ## If the version is "ASN", we are working with an ASN datatype, this funciton is called from the print_AS_Numbers() function, and it serves to expand the 
         #this sets the expansion threshold, omitting entries that don't yield results to make sifting through many entries easier.
         exp_threshold = 0
-        print(colors.fg.lightgreen,ipBlockList[1],colors.reset+"	"+colors.fg.lightcyan+"AS"+ipBlockList[3]+colors.reset)
+        #for formating we use .expandtabs() to make the size of the tab relivant to the length of last time to make everything line up
+        addon = "	".expandtabs(8-len(ipBlockList[3])) +"	"
+        #if someone uses a date search function, we add a date colum
+        if args.before_date != None or args.after_date != None:
+            addon += "	"+ date_convert(ipBlockList[5])
+        print(colors.fg.lightgreen,ipBlockList[1],colors.reset+"	"+colors.fg.lightcyan+"AS"+ipBlockList[3]+colors.reset+addon)
         if len(asn_ipBlock_dict[ipBlockList[3]]) > exp_threshold:
             print("	  \\")
         for Block in asn_ipBlock_dict[ipBlockList[3]]:
@@ -107,10 +114,16 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
         
     #we assume that the program was called with either -4 or -6, and is printing file data from ipv4 or ipv6 blocks, and this function is called to do that, and passed either "ipv4" or "ipv6" as the version.
     else:
+        if args.before_date != None or args.after_date != None:
+            addontitle += "	DATE"
+            use_date    = True
         print(colors.bold,colors.fg.yellow,"	",ver,"Address blocks",colors.reset)
-        print(colors.bold,"CC	IPBlock	 	CIDR",colors.reset)
+        print(colors.bold,"CC	IPBlock	 	CIDR"+addontitle,colors.reset)
         for line in ipBlockList:
-            print(colors.fg.lightgreen,line[1],colors.reset+"	"+colors.fg.lightcyan+line[3]+colors.reset+"	"+line[4])
+            addon = ""
+            if use_date == True:
+                addon += "	"+date_convert(line[5])
+            print(colors.fg.lightgreen,line[1],colors.reset+"	"+colors.fg.lightcyan+line[3]+colors.reset+"	"+line[4]+addon)
             if print_opts == "expand":
                 print_ip_list(ipList[line[3]+line[4]],None)
 
@@ -136,6 +149,7 @@ def list_AS_numbers(filelines):
     outList = []
     for line in filelines:
         line = line.split(d)
+        #if the line has less then 7 tokens the line is invalid and we skip it
         if len(line) < 7:
             continue
         elif line[2] == "asn":
@@ -144,15 +158,25 @@ def list_AS_numbers(filelines):
 
 def print_AS_Numbers(asnlist,print_opts):
     '''Print all the Autonomous Systems listed in the file, takes one variable, a list with the filelines in it'''
+    addontitle = ""
+    use_date   = False
+    if args.before_date != None or args.after_date != None:
+         addontitle += "	DATE"
+         use_date = True
     print(colors.bold,colors.fg.yellow,"  Autonomous System Numbers",colors.reset)
-    print(colors.bold,"CC	ASNumber",colors.reset)
+    print(colors.bold,"CC	ASNumber	"+addontitle,colors.reset)
     for asn in asnlist:
+        #use of .expandtab() is a dirty ugly hack to get colums to line up
+        addon = "	".expandtabs(8-len(asn[3])) +"	"
         if "expand" == print_opts:
             print_ip_block_list(asn,"ASN",None)
         elif "expand twice" == print_opts:
             print_ip_block_list(asn,"ASN","expand")
         else:
-            print(colors.fg.lightgreen,asn[1],colors.reset+"	"+colors.fg.lightcyan+"AS"+asn[3]+colors.reset)
+            #if someone uses a date search function, we add a date colum
+            if use_date == True:
+                addon += "	"+ date_convert(asn[5])
+            print(colors.fg.lightgreen,asn[1],colors.reset+"	"+colors.fg.lightcyan+"AS"+asn[3]+colors.reset+addon)
 
 def ASN_list_ip_blocks(asnlist,mirror):
     '''Calls ASNWhois to get a list of ipblocks from ARIN databases, two opts, a list of ASNs, and whois mirror, None for defaults'''
