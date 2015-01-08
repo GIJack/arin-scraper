@@ -100,10 +100,10 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
         #this sets the expansion threshold, omitting entries that don't yield results to make sifting through many entries easier.
         exp_threshold = 0
         #for formating we use .expandtabs() to make the size of the tab relivant to the length of last time to make everything line up
-        addon = "	".expandtabs(8-len(ipBlockList[3])) +"	"
+        addon = "	".expandtabs(8-len(ipBlockList[3])) +"	    "
         #if someone uses a date search function, we add a date colum
         if args.before_date != None or args.after_date != None:
-            addon += "	"+ date_convert(ipBlockList[5])
+            addon += date_convert(ipBlockList[5]) + "	".expandtabs(24-len(date_convert(ipBlockList[5])))
         print(colors.fg.lightgreen,ipBlockList[1],colors.reset+"	"+colors.fg.lightcyan+"AS"+ipBlockList[3]+colors.reset+addon)
         if len(asn_ipBlock_dict[ipBlockList[3]]) > exp_threshold:
             print("	  \\")
@@ -120,9 +120,9 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
         print(colors.bold,colors.fg.yellow,"	",ver,"Address blocks",colors.reset)
         print(colors.bold,"CC	IPBlock	 	CIDR"+addontitle,colors.reset)
         for line in ipBlockList:
-            addon = ""
+            addon = "	"
             if use_date == True:
-                addon += "	"+date_convert(line[5])
+                addon += date_convert(line[5]) + "	".expandtabs(24-len(date_convert(line[5])))
             print(colors.fg.lightgreen,line[1],colors.reset+"	"+colors.fg.lightcyan+line[3]+colors.reset+"	"+line[4]+addon)
             if print_opts == "expand":
                 print_ip_list(ipList[line[3]+line[4]],None)
@@ -164,10 +164,10 @@ def print_AS_Numbers(asnlist,print_opts):
          addontitle += "	DATE"
          use_date = True
     print(colors.bold,colors.fg.yellow,"  Autonomous System Numbers",colors.reset)
-    print(colors.bold,"CC	ASNumber	"+addontitle,colors.reset)
+    print(colors.bold,"CC	ASNumber	"+addontitle+,colors.reset)
     for asn in asnlist:
         #use of .expandtab() is a dirty ugly hack to get colums to line up
-        addon = "	".expandtabs(8-len(asn[3])) +"	"
+        addon = "	".expandtabs(8-len(asn[3])) +"		"
         if "expand" == print_opts:
             print_ip_block_list(asn,"ASN",None)
         elif "expand twice" == print_opts:
@@ -175,8 +175,8 @@ def print_AS_Numbers(asnlist,print_opts):
         else:
             #if someone uses a date search function, we add a date colum
             if use_date == True:
-                addon += "	"+ date_convert(asn[5])
-            print(colors.fg.lightgreen,asn[1],colors.reset+"	"+colors.fg.lightcyan+"AS"+asn[3]+colors.reset+addon)
+                addon += date_convert(asn[5]) + "	".expandtabs(24-len(date_convert(asn[5])))
+            print(colors.fg.lightgreen,asn[1],colors.reset+"	"+colors.fg.lightcyan+"AS"+asn[3]+colors.reset+addon+"1")
 
 def ASN_list_ip_blocks(asnlist,mirror):
     '''Calls ASNWhois to get a list of ipblocks from ARIN databases, two opts, a list of ASNs, and whois mirror, None for defaults'''
