@@ -176,7 +176,7 @@ def print_AS_Numbers(asnlist,print_opts):
             #if someone uses a date search function, we add a date colum
             if use_date == True:
                 addon += date_convert(asn[5]) + "	".expandtabs(24-len(date_convert(asn[5])))
-            print(colors.fg.lightgreen,asn[1],colors.reset+"	"+colors.fg.lightcyan+"AS"+asn[3]+colors.reset+addon+"1")
+            print(colors.fg.lightgreen,asn[1],colors.reset+"	"+colors.fg.lightcyan+"AS"+asn[3]+colors.reset+addon)
 
 def ASN_list_ip_blocks(asnlist,mirror):
     '''Calls ASNWhois to get a list of ipblocks from ARIN databases, two opts, a list of ASNs, and whois mirror, None for defaults'''
