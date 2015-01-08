@@ -164,7 +164,7 @@ def print_AS_Numbers(asnlist,print_opts):
          addontitle += "	DATE"
          use_date = True
     print(colors.bold,colors.fg.yellow,"  Autonomous System Numbers",colors.reset)
-    print(colors.bold,"CC	ASNumber	"+addontitle+,colors.reset)
+    print(colors.bold,"CC	ASNumber	"+addontitle,colors.reset)
     for asn in asnlist:
         #use of .expandtab() is a dirty ugly hack to get colums to line up
         addon = "	".expandtabs(8-len(asn[3])) +"		"
