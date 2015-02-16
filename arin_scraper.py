@@ -142,7 +142,7 @@ def printValueMetric(entry,spacing):
     data = valueMetricScore[entry]
     if spacing == None:
          spacing = ""
-    print(spacing+"metric-score")
+    print(spacing+"metric-score"+data)
 
 def list_AS_numbers(filelines):
     '''returns the lines of the list that are ASN entries, takes the filelist as unput'''
@@ -333,7 +333,7 @@ for filename in args.filenames:
         filelines = FilterSelect(args.select,filelines)
 
     filelines = sorted(FilterCountryCodes(countries,filelines))
-    #set up data structures to be used later. the first three, are used by
+    #set up data structures to be used later.
     asn_list = []
     ipv4BlockList = []
     ipv6BlockList = []
