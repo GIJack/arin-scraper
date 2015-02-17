@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # This is a library file for arin-scraper.py that handles handles all the cost/value analysis
 # Written by jack @ nyi
-# Licensed under a BSD 3 clause license. see LICENSE
+# Licensed under FreeBSD's 3 clause BSD license. see LICENSE
+
+'''This library does value/metric anaylsis of network objects for comparison'''
 
 ### Second Level Metrics ASN and IP Block scores ###
 

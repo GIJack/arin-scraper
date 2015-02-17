@@ -52,7 +52,7 @@ def get_province(data_in,cc,data_type):
         province = asnwhois.ASNWhois.ASN_meta_data(data_in,args.whois_server)['StateProv']
     elif data_type == "ip_addr":
         whois = ipwhois.IPWhois(data_in)
-        province = whois.lookup()[nets][-1]['state']
+        province = whois.lookup()['nets'][-1]['state']
     if province in bigDict.provinceTable[cc]:
         return province
 

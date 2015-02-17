@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Library File for arin_scraper.py
-# licensed under the FreeBSD license: see LICENSE
+# Written by jack @ nyi
+# Licensed under FreeBSD's 3 clause BSD license. see LICENSE
 
 '''Big Dictionary File, for extremely long lists, dictionaries, and classes to
    keep them out of the mainfile to reduce clutter. Large amounts of static data

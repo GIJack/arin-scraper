@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# Written by Jack @ nyi. Licensed under the FreeBSD license. See LICENSE
-# This class calls the system's "ping" command and stores the results
+# Written by jack @ nyi
+# Licensed under FreeBSD's 3 clause BSD license. see LICENSE
+
+'''This class calls the system's "ping" command and stores the results'''
 
 class sys_ping:
     '''this class is a python wrapper for UNIX system ping command, subclass ping does the work, last stores data from the last sysping.ping'''

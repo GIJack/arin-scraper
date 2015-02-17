@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# Written by Jack @ nyi. Licensed under the FreeBSD license. See LICENSE
-# Calls system(posix) traceroute and returns and makes the values accessable to python
+# Written by jack @ nyi
+# Licensed under FreeBSD's 3 clause BSD license. see LICENSE
+
+''' Calls system(posix) traceroute and returns and makes the values accessable to python'''
 
 class sys_traceroute:
     '''this class is a python wrapper for UNIX system ping command, subclass ping does the work, last stores data from the last systraceroute.traceroute'''
