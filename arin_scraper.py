@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-# This script parses and proccess ARIN's statusfiles from their FTP server, and can discover networks from ASNs, and IPs from networks, using external tools.
-# It can also output to FTW loadbalancer config files
 # Written by jack @ nyi
 # Licensed under FreeBSD's 3 clause BSD license. see LICENSE
 
-# see arin_scraper.py --help for usage, and README for dependencies and installation instructions
-# Status files are found here: ftp://ftp.arin.net/pub/stats/
+''' 
+    This script parses and proccess ARIN's statusfiles from their FTP server,
+    and can discover networks from ASNs, and IPs from networks. It can also
+    output to FTW loadbalancer config files
+      see arin_scraper.py --help for usage
+      see README for dependencies and installation instructions
+    Status files are found here: ftp://ftp.arin.net/pub/stats/
+'''
 
 #The delimeter for fields that ARIN uses
 d="|"
-
-#if __name__ == "__main__":
-#    main_function()
 
 def cidr_convert(total):
     '''Converts Total amount of IP addresses to coresponding cidr notation
@@ -42,6 +43,19 @@ def date_convert(indate):
         return datetime.date(year,month,day).strftime("%a %B %d, %Y")
     except:
         return "Unknown		"
+        
+def get_province(data_in,cc,data_type):
+    '''resolve the province/state of a data structure with whois'''
+    from utils import asnwhois
+    import ipwhois
+    if data_type == "ASN":
+        province = asnwhois.ASNWhois.ASN_meta_data(data_in,args.whois_server)['StateProv']
+    elif data_type == "ip_addr":
+        whois = ipwhois.IPWhois(data_in)
+        province = whois.lookup()[nets][-1]['state']
+    if province in bigDict.provinceTable[cc]:
+        return province
+
 
 def strip_comments(inList):
     '''Strips out lines that start with # from a list that contains a dump of a file. please note it does not work with lines that have comments at the end.'''
@@ -145,7 +159,7 @@ def printValueMetric(entry,spacing):
     print(spacing+"metric-score"+data)
 
 def list_AS_numbers(filelines):
-    '''returns the lines of the list that are ASN entries, takes the filelist as unput'''
+    '''returns the lines of the list that are ASN entries, takes the filelist as input'''
     outList = []
     for line in filelines:
         line = line.split(d)
@@ -153,6 +167,8 @@ def list_AS_numbers(filelines):
         if len(line) < 7:
             continue
         elif line[2] == "asn":
+            if args.province != None:
+                True
             outList.append(line)
     return outList
 
@@ -166,7 +182,7 @@ def print_AS_Numbers(asnlist,print_opts):
     print(colors.bold,colors.fg.yellow,"  Autonomous System Numbers",colors.reset)
     print(colors.bold,"CC	ASNumber	"+addontitle,colors.reset)
     for asn in asnlist:
-        #use of .expandtab() is a dirty ugly hack to get colums to line up
+        #use of .expandtabs() is a dirty ugly hack to get colums to line up
         addon = "	".expandtabs(8-len(asn[3])) +"		"
         if "expand" == print_opts:
             print_ip_block_list(asn,"ASN",None)
@@ -186,6 +202,7 @@ def ASN_list_ip_blocks(asnlist,mirror):
         target = "AS" + asn[3]
         ipBlocks = ASNWhois.get_ipblocks(target, mirror)
         outDict[asn[3]] = ipBlocks
+    
     return outDict
 
 def nmapScanHosts(targetList,opts):
@@ -257,6 +274,7 @@ data_type.add_argument("-n","--asn", help="Autonomous System Numbers(ASN)",actio
 filter_type = parser.add_argument_group("Filtering Options","filter data according to the following options. This only applies to top level items found in the status files")
 filter_type.add_argument("-b","--before-date",help="List entries before specified date. Use 8 digit YEARMONTHDAY format",type=int)
 filter_type.add_argument("-e","--after-date", help="List entries after specified date. Use 8 digit YEARMONTHDAY format",type=int)
+filter_type.add_argument("-v", "--province",help="Sort results by State/Provence",action="store_true")
 
 selection_type = filter_type.add_mutually_exclusive_group()
 selection_type.add_argument("-r","--regex",  help="Regular Expression Search.(basic search works, no regex yet)",type=str)
@@ -374,32 +392,35 @@ for filename in args.filenames:
     if args.output_python == True:
         print( ( [file_meta.filename,file_meta.version,file_meta.serial,file_meta.startdate,file_meta.enddate,file_meta.offset], [asn_list,ipv4BlockList,ipv6BlockList], [ipList,asn_ipBlock_dict,valueMetricScore] ) )
         continue
-    ## Header data. Real easy, just re-formated to be human readable, nothing more.
-    if args.info == True or args.all == True:
-        print_metadata()
-    ## IP address handling, if there is a -4 or a -6 in the command line
-    #If version 4 blocks are requested, with no transform options
-    useipv4 = args.ipv4 or args.all
-    useipv6 = args.ipv6 or args.all
-    if useipv4 == True and args.nmap != True:
-        print_ip_block_list(ipv4BlockList,"IPv4",None)
-    #same with version 6
-    if useipv6 == True and args.nmap != True:
-        print_ip_block_list(ipv6BlockList,"IPv6",None)
-    #now check if nmap expansion is enabled
-    if args.nmap == True:
-        if useipv4 == True:
-            print_ip_block_list(ipv4BlockList,"IPv4","expand")
-        if useipv6 == True:
-            print_ip_block_list(ipv6BlockList,"IPv6","expand")
-     ##ASN handling
-    useasn = args.asn == True or args.all == True
-    if useasn == True and args.asn2ipblocks != True:
-        print_AS_Numbers(asn_list,None)
-    elif useasn == True and args.asn2ipblocks == True:
-        if args.nmap != True:
-            print_AS_Numbers(asn_list,"expand")
-        #If nmap and whois are both selected, make a full tree:
-        elif args.nmap == True:
-            print_AS_Numbers(asn_list,"expand twice")
+    else:
+        ## Header data. Real easy, just re-formated to be human readable, nothing more.
+        if args.info == True or args.all == True:
+            print_metadata()
+        ## IP address handling, if there is a -4 or a -6 in the command line
+        #If version 4 blocks are requested, with no transform options
+        useipv4 = args.ipv4 or args.all
+        useipv6 = args.ipv6 or args.all
+        if useipv4 == True and args.nmap != True:
+            print_ip_block_list(ipv4BlockList,"IPv4",None)
+        #same with version 6
+        if useipv6 == True and args.nmap != True:
+            print_ip_block_list(ipv6BlockList,"IPv6",None)
+        #now check if nmap expansion is enabled
+        if args.nmap == True:
+            if useipv4 == True:
+                print_ip_block_list(ipv4BlockList,"IPv4","expand")
+            if useipv6 == True:
+                print_ip_block_list(ipv6BlockList,"IPv6","expand")
+         ##ASN handling
+        useasn = args.asn == True or args.all == True
+        if useasn == True and args.asn2ipblocks != True:
+            print_AS_Numbers(asn_list,None)
+        elif useasn == True and args.asn2ipblocks == True:
+            if args.nmap != True:
+                print_AS_Numbers(asn_list,"expand")
+            #If nmap and whois are both selected, make a full tree:
+            elif args.nmap == True:
+                print_AS_Numbers(asn_list,"expand twice")
 
+#if __name__ == "__main__":
+#    main_function()
