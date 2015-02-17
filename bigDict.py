@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-# bigDict.py - contains large static lookups elements for arin_scraper.py. Country lists, colors class, countryname to abbreviation dicitionary, and now dictionary for provences/states of countries.
 # Library File for arin_scraper.py
 # licensed under the FreeBSD license: see LICENSE
 
-'''Big Dictionary File, for extremely long lists, dictionaries, and classes to keep them out of the mainfile to reduce clutter. Mostly large amounts of static data in lookup tables'''
+'''Big Dictionary File, for extremely long lists, dictionaries, and classes to
+   keep them out of the mainfile to reduce clutter. Large amounts of static data
+   in lookup tables'''
 
 #Mark's list of countries he needs information on
 marksCountries=['AO', 'BJ', 'BW', 'BF', 'BI', 'CM', 'CV', 'CF', 'TD', 'CD', 'GQ',
