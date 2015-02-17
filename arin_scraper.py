@@ -167,8 +167,9 @@ def list_AS_numbers(filelines):
         if len(line) < 7:
             continue
         elif line[2] == "asn":
-            if args.province != None:
-                True
+            if args.province = True:
+                #add an additional column for state, get the state of the ASN from whois
+                line.append(get_providence("AS"+line[3],"ASN"))
             outList.append(line)
     return outList
 
