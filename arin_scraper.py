@@ -49,11 +49,17 @@ def get_province(data_in,cc,data_type):
     from utils import asnwhois
     import ipwhois
     if data_type == "ASN":
-        province = asnwhois.ASNWhois.ASN_meta_data(data_in,args.whois_server)['StateProv']
+        try:
+            province = asnwhois.ASNWhois.ASN_meta_data(data_in,None)['StateProv']
+        except:
+            return None
     elif data_type == "ip_addr":
-        whois = ipwhois.IPWhois(data_in)
-        province = whois.lookup()['nets'][-1]['state']
-    if province in bigDict.provinceTable[cc]:
+        try:
+            whois = ipwhois.IPWhois(data_in)
+            province = whois.lookup()['nets'][-1]['state']
+        except:
+            return None
+    if province in provinceTable[cc]:
         return province
 
 
@@ -80,7 +86,6 @@ def list_ip_blocks(filelines,ver):
     '''print all ip address blocks, two variables, first a list with all the lines of the current file
     second, the version of the IP protocol, either IPv4 or IPv6 '''
     outList= []
-    #for cc in countries:
     for line in filelines:
         #for every line in the file, use split to put the fields in variables of a class
         #line.strip("\n")
@@ -112,13 +117,17 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
     if ver == "ASN":
         ## If the version is "ASN", we are working with an ASN datatype, this funciton is called from the print_AS_Numbers() function, and it serves to expand the 
         #this sets the expansion threshold, omitting entries that don't yield results to make sifting through many entries easier.
-        exp_threshold = 0
+        exp_threshold = 1
+        #exp_threshold = 0 +CHANGEME+
         #for formating we use .expandtabs() to make the size of the tab relivant to the length of last time to make everything line up
         addon = "	".expandtabs(8-len(ipBlockList[3])) +"	    "
         #if someone uses a date search function, we add a date colum
         if args.before_date != None or args.after_date != None:
             addon += date_convert(ipBlockList[5]) + "	".expandtabs(24-len(date_convert(ipBlockList[5])))
         print(colors.fg.lightgreen,ipBlockList[1],colors.reset+"	"+colors.fg.lightcyan+"AS"+ipBlockList[3]+colors.reset+addon)
+        # if there are IP blocks associated with the ASN, print them one on a line
+        #if len(ipBlockList) >= 8:
+        #    print("State/Province:",ipBlockList[7])
         if len(asn_ipBlock_dict[ipBlockList[3]]) > exp_threshold:
             print("	  \\")
         for Block in asn_ipBlock_dict[ipBlockList[3]]:
@@ -133,10 +142,15 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
             use_date    = True
         print(colors.bold,colors.fg.yellow,"	",ver,"Address blocks",colors.reset)
         print(colors.bold,"CC	IPBlock	 	CIDR"+addontitle,colors.reset)
+        #check to see if there is a state/province field added
+        #try:
+        #    print("State/Province:",line[7])
+        #except IndexError:
+        #    True
         for line in ipBlockList:
             addon = "	"
             if use_date == True:
-                addon += date_convert(line[5]) + "	".expandtabs(24-len(date_convert(line[5])))
+                addon += date_convert(line[5]) + "	".expandtabs(24-len(date_convert(line[5]))) #set tab width so columns line up
             print(colors.fg.lightgreen,line[1],colors.reset+"	"+colors.fg.lightcyan+line[3]+colors.reset+"	"+line[4]+addon)
             if print_opts == "expand":
                 print_ip_list(ipList[line[3]+line[4]],None)
@@ -167,9 +181,9 @@ def list_AS_numbers(filelines):
         if len(line) < 7:
             continue
         elif line[2] == "asn":
-            if args.province = True:
+            if args.province == True:
                 #add an additional column for state, get the state of the ASN from whois
-                line.append(get_providence("AS"+line[3],"ASN"))
+                line.append(get_province("AS"+line[3],line[1],"ASN"))
             outList.append(line)
     return outList
 
