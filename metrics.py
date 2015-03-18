@@ -102,7 +102,7 @@ def traceMetric(host,opts):
             #This will fail if there is a private IP somewhere in the chain, we simply ignore private IPs
             continue
         #now, grab the name of the network from whois
-        hop_NetName = whois.lookup()['nets'][0]['description']
+        hop_NetName = whois.lookup()['nets'][-1]['description']
         #if the network name of the hop is the same as the network name of the target host, increment by 1
         if hop_NetName == hostNetName:
             hopcount += 1
