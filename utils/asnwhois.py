@@ -15,7 +15,7 @@ class ASNWhois:
             else:
                 indata = subprocess.check_output(["whois","-h",mirror,"-i","origin","-T","route",ASN])
         except subprocess.CalledProcessError:
-            return ""
+            return None
         #comment and garbage stripper getting rid of all non key=value lines
         indata = ASNWhois.infile_proc(indata)
         #blank list that will be filled with IPBlocks
