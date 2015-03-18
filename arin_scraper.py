@@ -126,8 +126,11 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
             addon += date_convert(ipBlockList[5]) + "	".expandtabs(24-len(date_convert(ipBlockList[5])))
         print(colors.fg.lightgreen,ipBlockList[1],colors.reset+"	"+colors.fg.lightcyan+"AS"+ipBlockList[3]+colors.reset+addon)
         # if there are IP blocks associated with the ASN, print them one on a line
-        #if len(ipBlockList) >= 8:
-        #    print("State/Province:",ipBlockList[7])
+        if args.province == True:
+            try:
+                print(" State/Province:",ipBlockList[7])
+            except IndexError:
+                True
         if len(asn_ipBlock_dict[ipBlockList[3]]) > exp_threshold:
             print("	  \\")
         for Block in asn_ipBlock_dict[ipBlockList[3]]:
@@ -143,10 +146,11 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
         print(colors.bold,colors.fg.yellow,"	",ver,"Address blocks",colors.reset)
         print(colors.bold,"CC	IPBlock	 	CIDR"+addontitle,colors.reset)
         #check to see if there is a state/province field added
-        #try:
-        #    print("State/Province:",line[7])
-        #except IndexError:
-        #    True
+        if args.province == True:
+            try:
+                print("State/Province:",line[7])
+            except IndexError:
+                True
         for line in ipBlockList:
             addon = "	"
             if use_date == True:
@@ -183,7 +187,11 @@ def list_AS_numbers(filelines):
         elif line[2] == "asn":
             if args.province == True:
                 #add an additional column for state, get the state of the ASN from whois
-                line.append(get_province("AS"+line[3],line[1],"ASN"))
+                try:
+                    line[7] = get_province("AS"+line[3],line[1],"ASN")
+                except:
+                    line.append(get_province("AS"+line[3],line[1],"ASN"))
+                    
             outList.append(line)
     return outList
 
@@ -355,6 +363,7 @@ for filename in args.filenames:
     except:
         print(filename,"is not an ARIN statistics file!")
         continue
+
     #Filters go here!
     if args.before_date != None:
         filelines = FilterDates(args.before_date,"before",filelines)
