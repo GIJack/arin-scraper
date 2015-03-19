@@ -127,6 +127,8 @@ provinceTable = {
             'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC',
             'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT',
             'VT', 'VA', 'WA', 'WV', 'WI', 'WY'],
+    
+    "CA" : ['AB', 'BC', 'MB', 'NB', 'NL', 'NS', 'PE', 'QC', 'QN', 'SK'],
 }
 
 class colors:
