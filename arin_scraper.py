@@ -191,7 +191,6 @@ def list_AS_numbers(filelines):
                     line[7] = get_province("AS"+line[3],line[1],"ASN")
                 except:
                     line.append(get_province("AS"+line[3],line[1],"ASN"))
-                    
             outList.append(line)
     return outList
 
@@ -246,11 +245,13 @@ def nmapScanHosts(targetList,opts):
     for target in scanTargets:
         targetHosts = []
         scanner.scan(hosts=target, ports=None, arguments=opts)
-        for host in scanner.all_hosts():
+        for host in scanner.all_hosts()
             if scanner[host].state() == 'up':
                 targetHosts.append(host)
         validHosts.append(targetHosts)
         targetHosts.insert(0,target)
+        if args.nmap_expand == True:
+            populateIPValue_List(scanner.analyse_nmap_xml_scan()):
     outDict = {}
     for host in validHosts:
         for i in range(len(host)):
@@ -271,8 +272,13 @@ def populateValueMetrics(ipList,asn_ipBlock_dict,valueMetricScore):
         valueMetricScore[ipblock] = metrics.netMetric(ipblock,ipList)
     return valueMetricScore
 
+def populateIPValue_List(nmapInput):
+    '''Populate a dictionary with ip:nmap data entries, not implmented yet'''
+    #on the to do list.
+    return -1
+
 def printFTWlist():
-    '''prints data in an output format that can be read by varnish and HAproxy'''
+    '''prints data in an output format that can be read by varnish and HAproxy, not implemented yet'''
     #and now for something diffrent, pure proccessing, all killer, no filler. Eventually. Right now, just a mere empty function returning an error code
     return -1
 
@@ -306,6 +312,7 @@ selection_type.add_argument("-s","--select", help="Specify a Single Element to W
 proc_opts = parser.add_argument_group("Proccessing","Use NMAP and/or whois to expand IP Address Ranges and ASNumbers into more IP ranges and IP addresses respectively.")
 proc_opts.add_argument("-N","--nmap",        help="Scan Matching IP Address Ranges with NMAP",action="store_true")
 proc_opts.add_argument("-o","--nmap-opts",   help="NMAP commandline options to use with -N, defaults are:'-T5 -sn --max-retries 5'",type=str,default='-T5 -sn --max-retries 5')
+proc_opts.add_argument("-x","--nmap-expand", help="Expand IP address output to show properties discovered with nmap",action="store_true")
 proc_opts.add_argument("-W","--asn2ipblocks",help="Use 'whois' To Find IPaddress Blocks Associated With ASNumber",action="store_true")
 proc_opts.add_argument("-h","--whois-server",help="WHOIS server to use with -w",type=str)
 proc_opts.add_argument("-T","--do-metrics",  help="Perform value metrics and sort by value metrics(work in proggress)",action="store_true")
@@ -316,7 +323,7 @@ use_dict.add_argument("-C","--cc",        help="Country Codes: Use specified cou
 use_dict.add_argument("-M","--marks-list",help="Use Mark's List of Countries"+colors.fg.lightcyan+ colors.bold+"(default)"+colors.reset,action="store_true")
 use_dict.add_argument("-S","--iso-list",  help="Use List of Countries From ISO 3166-1",action="store_true")
 
-out_opts_parent = parser.add_argument_group("Output Options","Format to display data(not yet implemented)")
+out_opts_parent = parser.add_argument_group("Output Options","Format to display data(partially implemented)")
 out_opts        = out_opts_parent.add_mutually_exclusive_group()
 out_opts.add_argument("-t","--output-tree",  help="hierarchal tree output designed to be human readable"+colors.fg.lightcyan+ colors.bold+"(default)"+colors.reset,action="store_true")
 out_opts.add_argument("-w","--output-FTW",   help="Outputs to a comma seperated list, of Country,IP address",action="store_true")
@@ -376,15 +383,16 @@ for filename in args.filenames:
 
     filelines = sorted(FilterCountryCodes(countries,filelines))
     #set up data structures to be used later.
-    asn_list = []
-    ipv4BlockList = []
-    ipv6BlockList = []
+    asn_list         = []
+    ipv4BlockList    = []
+    ipv6BlockList    = []
     global ipList
-    ipList = {}
+    ipList           = {}
     global asn_ipBlock_dict
     asn_ipBlock_dict = {}
     global valueMetricScore
     valueMetricScore = {}
+    ipValue_dict     = {}
     ### gather and proccess data into lists###
     ## Start with basic information gathering from the file
     #start with IP addresses
