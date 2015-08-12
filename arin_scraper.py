@@ -168,13 +168,22 @@ def print_ip_list(ipList,print_opts):
         print(spacing+"\\")
         for address in ipList:
             print(spacing+"|-"+address)
+            
+def print_ip_values(ipaddr,print_opts):
+    spacing="			"
+    '''prints ip address values'''
+    if ipaddr in valueMetricScore:
+        print(spacing+"Metric Score",valueMetricScore[ipaddr])
+    if ipaddr in ipValue_dict:
+        for item in ipValue_dict[ipaddr]:
+            print(spacing+item,ipValue_dict[ipaddr][item])
 
 def printValueMetric(entry,spacing):
     '''prints out value metric scoring for unit'''
     data = valueMetricScore[entry]
     if spacing == None:
          spacing = ""
-    print(spacing+"metric-score"+data)
+    print(spacing+"metric-score: "+data)
 
 def list_AS_numbers(filelines):
     '''returns the lines of the list that are ASN entries, takes the filelist as input'''
@@ -245,13 +254,13 @@ def nmapScanHosts(targetList,opts):
     for target in scanTargets:
         targetHosts = []
         scanner.scan(hosts=target, ports=None, arguments=opts)
-        for host in scanner.all_hosts()
+        for host in scanner.all_hosts():
             if scanner[host].state() == 'up':
                 targetHosts.append(host)
         validHosts.append(targetHosts)
         targetHosts.insert(0,target)
         if args.nmap_expand == True:
-            populateIPValue_List(scanner.analyse_nmap_xml_scan()):
+            populateIPValue_List(scanner.analyse_nmap_xml_scan())
     outDict = {}
     for host in validHosts:
         for i in range(len(host)):
@@ -274,7 +283,8 @@ def populateValueMetrics(ipList,asn_ipBlock_dict,valueMetricScore):
 
 def populateIPValue_List(nmapInput):
     '''Populate a dictionary with ip:nmap data entries, not implmented yet'''
-    #on the to do list.
+    nmapInput = nmapInput[nmap]
+    
     return -1
 
 def printFTWlist():
