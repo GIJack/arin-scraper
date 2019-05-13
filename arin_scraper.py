@@ -237,8 +237,8 @@ def printFTWlist():
     return -1
 
 ###----MAIN PROGRAM ----###
-#All static lookup tables moved to the "Big Dictionary" file.
-from bigDict import *
+#All static lookup tables moved to the lookup table file.
+from lookup_tables import *
 #argument parsing code.
 import argparse
 parser = argparse.ArgumentParser(description='''This app parses data about ASNs and IP address ranges from ARIN Statistics Files, and look for hosts based on system name ARIN's Status files can be found on their FTP server here:
