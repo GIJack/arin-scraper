@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # This is a library file for arin-scraper.py that handles handles all the cost/value analysis
 # Written by jack @ nyi
-# Licensed under a BSD 3 clause license. see LICENSE
+# Licensed under FreeBSD's 3 clause BSD license. see LICENSE
+
+'''This library does value/metric anaylsis of network objects for comparison'''
 
 ### Second Level Metrics ASN and IP Block scores ###
 
@@ -100,7 +102,7 @@ def traceMetric(host,opts):
             #This will fail if there is a private IP somewhere in the chain, we simply ignore private IPs
             continue
         #now, grab the name of the network from whois
-        hop_NetName = whois.lookup()['nets'][0]['description']
+        hop_NetName = whois.lookup()['nets'][-1]['description']
         #if the network name of the hop is the same as the network name of the target host, increment by 1
         if hop_NetName == hostNetName:
             hopcount += 1

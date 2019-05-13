@@ -3,6 +3,8 @@
 # Written by jack @ nyi
 # Licensed under a BSD 3 clause license. see LICENSE
 
+'''Collection of filtering options for arin scraper '''
+
 #field delimeter that ARIN uses
 d="|"
 

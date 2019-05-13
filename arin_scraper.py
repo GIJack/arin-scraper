@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-# This script parses and proccess ARIN's statusfiles from their FTP server, and can discover networks from ASNs, and IPs from networks, using external tools.
-# It can also output to FTW loadbalancer config files
 # Written by jack @ nyi
 # Licensed under FreeBSD's 3 clause BSD license. see LICENSE
 
-# see arin_scraper.py --help for usage, and README for dependencies and installation instructions
-# Status files are found here: ftp://ftp.arin.net/pub/stats/
+''' 
+    This script parses and proccess ARIN's statusfiles from their FTP server,
+    and can discover networks from ASNs, and IPs from networks. It can also
+    output to FTW loadbalancer config files
+      see arin_scraper.py --help for usage
+      see README for dependencies and installation instructions
+    Status files are found here: ftp://ftp.arin.net/pub/stats/
+'''
 
 #The delimeter for fields that ARIN uses
 d="|"
-
-#if __name__ == "__main__":
-#    main_function()
 
 def cidr_convert(total):
     '''Converts Total amount of IP addresses to coresponding cidr notation
@@ -42,6 +43,25 @@ def date_convert(indate):
         return datetime.date(year,month,day).strftime("%a %B %d, %Y")
     except:
         return "Unknown		"
+        
+def get_province(data_in,cc,data_type):
+    '''resolve the province/state of a data structure with whois'''
+    from utils import asnwhois
+    import ipwhois
+    if data_type == "ASN":
+        try:
+            province = asnwhois.ASNWhois.ASN_meta_data(data_in,None)['StateProv']
+        except:
+            return None
+    elif data_type == "ip_addr":
+        try:
+            whois = ipwhois.IPWhois(data_in)
+            province = whois.lookup()['nets'][-1]['state']
+        except:
+            return None
+    if province in provinceTable[cc]:
+        return province
+
 
 def strip_comments(inList):
     '''Strips out lines that start with # from a list that contains a dump of a file. please note it does not work with lines that have comments at the end.'''
@@ -66,7 +86,6 @@ def list_ip_blocks(filelines,ver):
     '''print all ip address blocks, two variables, first a list with all the lines of the current file
     second, the version of the IP protocol, either IPv4 or IPv6 '''
     outList= []
-    #for cc in countries:
     for line in filelines:
         #for every line in the file, use split to put the fields in variables of a class
         #line.strip("\n")
@@ -98,13 +117,20 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
     if ver == "ASN":
         ## If the version is "ASN", we are working with an ASN datatype, this funciton is called from the print_AS_Numbers() function, and it serves to expand the 
         #this sets the expansion threshold, omitting entries that don't yield results to make sifting through many entries easier.
-        exp_threshold = 0
+        exp_threshold = 1
+        #exp_threshold = 0 +CHANGEME+
         #for formating we use .expandtabs() to make the size of the tab relivant to the length of last time to make everything line up
         addon = "	".expandtabs(8-len(ipBlockList[3])) +"	    "
         #if someone uses a date search function, we add a date colum
         if args.before_date != None or args.after_date != None:
             addon += date_convert(ipBlockList[5]) + "	".expandtabs(24-len(date_convert(ipBlockList[5])))
         print(colors.fg.lightgreen,ipBlockList[1],colors.reset+"	"+colors.fg.lightcyan+"AS"+ipBlockList[3]+colors.reset+addon)
+        # if there are IP blocks associated with the ASN, print them one on a line
+        if args.province == True:
+            try:
+                print(" State/Province:",ipBlockList[7])
+            except IndexError:
+                True
         if len(asn_ipBlock_dict[ipBlockList[3]]) > exp_threshold:
             print("	  \\")
         for Block in asn_ipBlock_dict[ipBlockList[3]]:
@@ -119,10 +145,16 @@ def print_ip_block_list(ipBlockList,ver,print_opts):
             use_date    = True
         print(colors.bold,colors.fg.yellow,"	",ver,"Address blocks",colors.reset)
         print(colors.bold,"CC	IPBlock	 	CIDR"+addontitle,colors.reset)
+        #check to see if there is a state/province field added
+        if args.province == True:
+            try:
+                print("State/Province:",line[7])
+            except IndexError:
+                True
         for line in ipBlockList:
             addon = "	"
             if use_date == True:
-                addon += date_convert(line[5]) + "	".expandtabs(24-len(date_convert(line[5])))
+                addon += date_convert(line[5]) + "	".expandtabs(24-len(date_convert(line[5]))) #set tab width so columns line up
             print(colors.fg.lightgreen,line[1],colors.reset+"	"+colors.fg.lightcyan+line[3]+colors.reset+"	"+line[4]+addon)
             if print_opts == "expand":
                 print_ip_list(ipList[line[3]+line[4]],None)
@@ -136,16 +168,25 @@ def print_ip_list(ipList,print_opts):
         print(spacing+"\\")
         for address in ipList:
             print(spacing+"|-"+address)
+            
+def print_ip_values(ipaddr,print_opts):
+    spacing="			"
+    '''prints ip address values'''
+    if ipaddr in valueMetricScore:
+        print(spacing+"Metric Score",valueMetricScore[ipaddr])
+    if ipaddr in ipValue_dict:
+        for item in ipValue_dict[ipaddr]:
+            print(spacing+item,ipValue_dict[ipaddr][item])
 
 def printValueMetric(entry,spacing):
     '''prints out value metric scoring for unit'''
     data = valueMetricScore[entry]
     if spacing == None:
          spacing = ""
-    print(spacing+"metric-score")
+    print(spacing+"metric-score: "+data)
 
 def list_AS_numbers(filelines):
-    '''returns the lines of the list that are ASN entries, takes the filelist as unput'''
+    '''returns the lines of the list that are ASN entries, takes the filelist as input'''
     outList = []
     for line in filelines:
         line = line.split(d)
@@ -153,6 +194,12 @@ def list_AS_numbers(filelines):
         if len(line) < 7:
             continue
         elif line[2] == "asn":
+            if args.province == True:
+                #add an additional column for state, get the state of the ASN from whois
+                try:
+                    line[7] = get_province("AS"+line[3],line[1],"ASN")
+                except:
+                    line.append(get_province("AS"+line[3],line[1],"ASN"))
             outList.append(line)
     return outList
 
@@ -166,7 +213,7 @@ def print_AS_Numbers(asnlist,print_opts):
     print(colors.bold,colors.fg.yellow,"  Autonomous System Numbers",colors.reset)
     print(colors.bold,"CC	ASNumber	"+addontitle,colors.reset)
     for asn in asnlist:
-        #use of .expandtab() is a dirty ugly hack to get colums to line up
+        #use of .expandtabs() is a dirty ugly hack to get colums to line up
         addon = "	".expandtabs(8-len(asn[3])) +"		"
         if "expand" == print_opts:
             print_ip_block_list(asn,"ASN",None)
@@ -186,6 +233,7 @@ def ASN_list_ip_blocks(asnlist,mirror):
         target = "AS" + asn[3]
         ipBlocks = ASNWhois.get_ipblocks(target, mirror)
         outDict[asn[3]] = ipBlocks
+    
     return outDict
 
 def nmapScanHosts(targetList,opts):
@@ -211,6 +259,8 @@ def nmapScanHosts(targetList,opts):
                 targetHosts.append(host)
         validHosts.append(targetHosts)
         targetHosts.insert(0,target)
+        if args.nmap_expand == True:
+            populateIPValue_List(scanner.analyse_nmap_xml_scan())
     outDict = {}
     for host in validHosts:
         for i in range(len(host)):
@@ -231,8 +281,14 @@ def populateValueMetrics(ipList,asn_ipBlock_dict,valueMetricScore):
         valueMetricScore[ipblock] = metrics.netMetric(ipblock,ipList)
     return valueMetricScore
 
+def populateIPValue_List(nmapInput):
+    '''Populate a dictionary with ip:nmap data entries, not implmented yet'''
+    nmapInput = nmapInput[nmap]
+    
+    return -1
+
 def printFTWlist():
-    '''prints data in an output format that can be read by varnish and HAproxy'''
+    '''prints data in an output format that can be read by varnish and HAproxy, not implemented yet'''
     #and now for something diffrent, pure proccessing, all killer, no filler. Eventually. Right now, just a mere empty function returning an error code
     return -1
 
@@ -257,6 +313,7 @@ data_type.add_argument("-n","--asn", help="Autonomous System Numbers(ASN)",actio
 filter_type = parser.add_argument_group("Filtering Options","filter data according to the following options. This only applies to top level items found in the status files")
 filter_type.add_argument("-b","--before-date",help="List entries before specified date. Use 8 digit YEARMONTHDAY format",type=int)
 filter_type.add_argument("-e","--after-date", help="List entries after specified date. Use 8 digit YEARMONTHDAY format",type=int)
+filter_type.add_argument("-v", "--province",help="Sort results by State/Provence",action="store_true")
 
 selection_type = filter_type.add_mutually_exclusive_group()
 selection_type.add_argument("-r","--regex",  help="Regular Expression Search.(basic search works, no regex yet)",type=str)
@@ -265,6 +322,7 @@ selection_type.add_argument("-s","--select", help="Specify a Single Element to W
 proc_opts = parser.add_argument_group("Proccessing","Use NMAP and/or whois to expand IP Address Ranges and ASNumbers into more IP ranges and IP addresses respectively.")
 proc_opts.add_argument("-N","--nmap",        help="Scan Matching IP Address Ranges with NMAP",action="store_true")
 proc_opts.add_argument("-o","--nmap-opts",   help="NMAP commandline options to use with -N, defaults are:'-T5 -sn --max-retries 5'",type=str,default='-T5 -sn --max-retries 5')
+proc_opts.add_argument("-x","--nmap-expand", help="Expand IP address output to show properties discovered with nmap",action="store_true")
 proc_opts.add_argument("-W","--asn2ipblocks",help="Use 'whois' To Find IPaddress Blocks Associated With ASNumber",action="store_true")
 proc_opts.add_argument("-h","--whois-server",help="WHOIS server to use with -w",type=str)
 proc_opts.add_argument("-T","--do-metrics",  help="Perform value metrics and sort by value metrics(work in proggress)",action="store_true")
@@ -275,7 +333,7 @@ use_dict.add_argument("-C","--cc",        help="Country Codes: Use specified cou
 use_dict.add_argument("-M","--marks-list",help="Use Mark's List of Countries"+colors.fg.lightcyan+ colors.bold+"(default)"+colors.reset,action="store_true")
 use_dict.add_argument("-S","--iso-list",  help="Use List of Countries From ISO 3166-1",action="store_true")
 
-out_opts_parent = parser.add_argument_group("Output Options","Format to display data(not yet implemented)")
+out_opts_parent = parser.add_argument_group("Output Options","Format to display data(partially implemented)")
 out_opts        = out_opts_parent.add_mutually_exclusive_group()
 out_opts.add_argument("-t","--output-tree",  help="hierarchal tree output designed to be human readable"+colors.fg.lightcyan+ colors.bold+"(default)"+colors.reset,action="store_true")
 out_opts.add_argument("-w","--output-FTW",   help="Outputs to a comma seperated list, of Country,IP address",action="store_true")
@@ -322,6 +380,7 @@ for filename in args.filenames:
     except:
         print(filename,"is not an ARIN statistics file!")
         continue
+
     #Filters go here!
     if args.before_date != None:
         filelines = FilterDates(args.before_date,"before",filelines)
@@ -333,16 +392,17 @@ for filename in args.filenames:
         filelines = FilterSelect(args.select,filelines)
 
     filelines = sorted(FilterCountryCodes(countries,filelines))
-    #set up data structures to be used later. the first three, are used by
-    asn_list = []
-    ipv4BlockList = []
-    ipv6BlockList = []
+    #set up data structures to be used later.
+    asn_list         = []
+    ipv4BlockList    = []
+    ipv6BlockList    = []
     global ipList
-    ipList = {}
+    ipList           = {}
     global asn_ipBlock_dict
     asn_ipBlock_dict = {}
     global valueMetricScore
     valueMetricScore = {}
+    ipValue_dict     = {}
     ### gather and proccess data into lists###
     ## Start with basic information gathering from the file
     #start with IP addresses
@@ -374,32 +434,35 @@ for filename in args.filenames:
     if args.output_python == True:
         print( ( [file_meta.filename,file_meta.version,file_meta.serial,file_meta.startdate,file_meta.enddate,file_meta.offset], [asn_list,ipv4BlockList,ipv6BlockList], [ipList,asn_ipBlock_dict,valueMetricScore] ) )
         continue
-    ## Header data. Real easy, just re-formated to be human readable, nothing more.
-    if args.info == True or args.all == True:
-        print_metadata()
-    ## IP address handling, if there is a -4 or a -6 in the command line
-    #If version 4 blocks are requested, with no transform options
-    useipv4 = args.ipv4 or args.all
-    useipv6 = args.ipv6 or args.all
-    if useipv4 == True and args.nmap != True:
-        print_ip_block_list(ipv4BlockList,"IPv4",None)
-    #same with version 6
-    if useipv6 == True and args.nmap != True:
-        print_ip_block_list(ipv6BlockList,"IPv6",None)
-    #now check if nmap expansion is enabled
-    if args.nmap == True:
-        if useipv4 == True:
-            print_ip_block_list(ipv4BlockList,"IPv4","expand")
-        if useipv6 == True:
-            print_ip_block_list(ipv6BlockList,"IPv6","expand")
-     ##ASN handling
-    useasn = args.asn == True or args.all == True
-    if useasn == True and args.asn2ipblocks != True:
-        print_AS_Numbers(asn_list,None)
-    elif useasn == True and args.asn2ipblocks == True:
-        if args.nmap != True:
-            print_AS_Numbers(asn_list,"expand")
-        #If nmap and whois are both selected, make a full tree:
-        elif args.nmap == True:
-            print_AS_Numbers(asn_list,"expand twice")
+    else:
+        ## Header data. Real easy, just re-formated to be human readable, nothing more.
+        if args.info == True or args.all == True:
+            print_metadata()
+        ## IP address handling, if there is a -4 or a -6 in the command line
+        #If version 4 blocks are requested, with no transform options
+        useipv4 = args.ipv4 or args.all
+        useipv6 = args.ipv6 or args.all
+        if useipv4 == True and args.nmap != True:
+            print_ip_block_list(ipv4BlockList,"IPv4",None)
+        #same with version 6
+        if useipv6 == True and args.nmap != True:
+            print_ip_block_list(ipv6BlockList,"IPv6",None)
+        #now check if nmap expansion is enabled
+        if args.nmap == True:
+            if useipv4 == True:
+                print_ip_block_list(ipv4BlockList,"IPv4","expand")
+            if useipv6 == True:
+                print_ip_block_list(ipv6BlockList,"IPv6","expand")
+         ##ASN handling
+        useasn = args.asn == True or args.all == True
+        if useasn == True and args.asn2ipblocks != True:
+            print_AS_Numbers(asn_list,None)
+        elif useasn == True and args.asn2ipblocks == True:
+            if args.nmap != True:
+                print_AS_Numbers(asn_list,"expand")
+            #If nmap and whois are both selected, make a full tree:
+            elif args.nmap == True:
+                print_AS_Numbers(asn_list,"expand twice")
 
+#if __name__ == "__main__":
+#    main_function()

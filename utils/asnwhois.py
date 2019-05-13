@@ -1,38 +1,43 @@
 #!/usr/bin/env python3
-# Written by GI_Jack for New York Internet corporation.
-# BSD 3-clause licensed see LICENSE
+# Written by jack @ nyi
+# Licensed under FreeBSD's 3 clause BSD license. see LICENSE
+
+'''library for using UNIX whois on ASN numbers to get useful information'''
 
 import subprocess
 class ASNWhois:
     '''The ASN whois class uses UNIX 'whois' to return data about an ASN number'''
     def get_ipblocks(ASN,mirror):
         '''This function returns a list of all ip address blocks from a given ASN number, takes two options, the ASN number, as typed into whois, and the name of the whois server'''
-        if mirror == None:
-            indata = subprocess.check_output(["whois","-i","origin","-T","route",ASN])
-        else:
-            indata = subprocess.check_output(["whois","-h",mirror,"-i","origin","-T","route",ASN])
+        try:
+            if mirror == None:
+                indata = subprocess.check_output(["whois","-i","origin","-T","route",ASN])
+            else:
+                indata = subprocess.check_output(["whois","-h",mirror,"-i","origin","-T","route",ASN])
+        except subprocess.CalledProcessError:
+            return None
         #comment and garbage stripper getting rid of all non key=value lines
         indata = ASNWhois.infile_proc(indata)
         #blank list that will be filled with IPBlocks
         outList = []
         for line in indata:
-            try:
-                if "route:" in line:
-                    #lets filter out the crap, and just capture the ip block from each line
-                    block = line.split()[1]
-                    outList.append(block)
-            except:
-                continue
+            if "route:" in line:
+                #lets filter out the crap, and just capture the ip block from each line
+                block = line.split()[1]
+                outList.append(block)
         ASNWhois.value.ipblocks = outList
         ASNWhois.value.asn = ASN
         return outList
 
     def ASN_meta_data(ASN,mirror):
         '''Returns a dict with metadata from whois <ASNumber> with key:values for all data returned'''
-        if mirror == None:
-            indata = str(subprocess.check_output(["whois",ASN]))
-        else:
-            indata = str(subprocess.check_output(["whois",ASN,"-h",mirror]))
+        try:
+            if mirror == None:
+                indata = str(subprocess.check_output(["whois",ASN]))
+            else:
+                indata = str(subprocess.check_output(["whois",ASN,"-h",mirror]))
+        except:
+            return
         #strips commends and erata from 
         indata = ASNWhois.infile_proc(indata)
         #blank dictionary for key=value paris
@@ -48,7 +53,7 @@ class ASNWhois:
             except:
                 continue
         ASNWhois.value.asn  = ASN
-        #This comment is very important, it will fail if you remove it, Do not remove this comment
+        #This comment is very important, program will fail if you remove it, Do not remove this comment
         ASNWhois.value.meta = outDict
         return outDict
 
