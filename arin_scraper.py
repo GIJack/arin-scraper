@@ -10,6 +10,16 @@
       see README for dependencies and installation instructions
     Status files are found here: ftp://ftp.arin.net/pub/stats/
 '''
+import os.path
+import argparse
+import datetime
+import nmap
+import ipwhois
+
+import metrics
+from utils import asnwhois
+from utils.asnwhois import ASNWhois
+
 
 #The delimeter for fields that ARIN uses
 d="|"
@@ -34,7 +44,6 @@ def cidr_convert(total):
 
 def date_convert(indate):
     '''When given a single 8 digit number for YEARMONTHDAY, converts into a standard date'''
-    import datetime
     try:
         indate  = str(indate)
         year    = int(indate[:4])
@@ -46,8 +55,7 @@ def date_convert(indate):
         
 def get_province(data_in,cc,data_type):
     '''resolve the province/state of a data structure with whois'''
-    from utils import asnwhois
-    import ipwhois
+
     if data_type == "ASN":
         try:
             province = asnwhois.ASNWhois.ASN_meta_data(data_in,None)['StateProv']
@@ -74,7 +82,6 @@ def strip_comments(inList):
     return fileLines
 
 def print_metadata():
-    import os.path
     '''Prints ARIN status file data in human readable format. '''
     print(colors.fg.lightgreen,colors.bold,"File Name: ",colors.reset,os.path.abspath(file_meta.filename))
     print(colors.fg.yellow,colors.bold,"File Format Version:",colors.reset,file_meta.version,colors.bold,colors.fg.yellow,"			Serial Number:",colors.reset,file_meta.serial)
@@ -227,7 +234,6 @@ def print_AS_Numbers(asnlist,print_opts):
 
 def ASN_list_ip_blocks(asnlist,mirror):
     '''Calls ASNWhois to get a list of ipblocks from ARIN databases, two opts, a list of ASNs, and whois mirror, None for defaults'''
-    from utils.asnwhois import ASNWhois
     outDict = {}
     for asn in asnlist:
         target = "AS" + asn[3]
@@ -247,7 +253,7 @@ def nmapScanHosts(targetList,opts):
     else:
         for line in targetList:
             scanTargets.append(line[3]+line[4])
-    import nmap
+
     opts = str(opts)
     scanner = nmap.PortScanner()
     validHosts = []
@@ -272,7 +278,7 @@ def nmapScanHosts(targetList,opts):
 
 def populateValueMetrics(ipList,asn_ipBlock_dict,valueMetricScore):
     '''perfoms value metric scoring on top level items'''
-    import metrics
+
     ##Start with ASNs
     for asn in asn_ipBlock_dict:
         valueMetricScore[asn]      = metrics.asnMetric(asn,ipList,asn_ipBlock_dict)
@@ -296,7 +302,7 @@ def printFTWlist():
 #All static lookup tables moved to the lookup table file.
 from lookup_tables import *
 #argument parsing code.
-import argparse
+
 parser = argparse.ArgumentParser(description='''This app parses data about ASNs and IP address ranges from ARIN Statistics Files, and look for hosts based on system name ARIN's Status files can be found on their FTP server here:
 ftp://ftp.arin.net/pub/stats/''',
 add_help=False)
