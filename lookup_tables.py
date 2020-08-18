@@ -3,9 +3,16 @@
 # Written by jack @ nyi
 # Licensed under FreeBSD's 3 clause BSD license. see LICENSE
 
-'''Big Dictionary File, for extremely long lists, dictionaries, and classes to
+'''Lookup tables, for extremely long lists, dictionaries, and classes to
    keep them out of the mainfile to reduce clutter. Large amounts of static data
    in lookup tables'''
+
+# CIDR notion and the corresponding amount of IPs in their space
+cidr_dict = { 16777216:"/8", 8388608:"/9", 4194304:"/10", 2097152:"/11",
+              1048576:"/12", 524288:"/13", 262144:"/14", 131072:"/15",
+              65536:"/16", 32768:"/17", 16384:"/18", 8192:"/19", 4096:"/20",
+              2048:"/21", 1024:"/22", 512:"/23", 256:"/24" ,128:"/25", 64:"/26",
+              32:"/27", 16:"/28", 8:"/29" }
 
 #Mark's list of countries he needs information on
 marksCountries=['AO', 'BJ', 'BW', 'BF', 'BI', 'CM', 'CV', 'CF', 'TD', 'CD', 'GQ',

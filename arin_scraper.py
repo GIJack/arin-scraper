@@ -29,7 +29,6 @@ def cidr_convert(total):
        address block, takes a single number'''
     total = int(total)
     #Static lookup table of the number of addresses for each CIDR notation network. We do the number of addresses as the key, because that is how they appear in ARIN files, and this function is used to convert those numbers into usable subnets.
-    cidr_dict = {16777216:"/8", 8388608:"/9", 4194304:"/10", 2097152:"/11", 1048576:"/12", 524288:"/13", 262144:"/14", 131072:"/15", 65536:"/16", 32768:"/17", 16384:"/18", 8192:"/19", 4096:"/20", 2048:"/21", 1024:"/22", 512:"/23", 256:"/24" ,128:"/25", 64:"/26", 32:"/27", 16:"/28", 8:"/29"}
     cidr_list = sorted(cidr_dict,reverse=True)
     #for whatever reason, not all entries in the ARIN status file are strictly CIDR blocks. Sometimes multiple concurrent blocks are grouped together.
     if total not in cidr_dict:
